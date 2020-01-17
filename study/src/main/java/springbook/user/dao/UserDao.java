@@ -13,6 +13,10 @@ import springbook.user.domain.User;
  * 토비의 스프링 1-1장 초난감DAO
  * @author 이경민
  * @since 2020.01.17
+ * @history
+ * 1-1장 초난감DAO
+ * 1-2장 DAO의 분리
+ *  - 중복 코드의 메소드 추출 : Connection을 가져오는 중복 코드 분리 -> 리팩토링-메소드추출기법★
  */
 public class UserDao {
 	
@@ -23,8 +27,7 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public void add(User user) throws ClassNotFoundException, SQLException{
-		Class.forName("com.mysql.cj.jdbc.Driver");
-		Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/springbook?serverTimezone=UTC", "spring", "book");
+		Connection c = getConnection();
 		
 		PreparedStatement ps = c.prepareStatement("insert into users(id, name, password) values (?,?,?)");
 		ps.setString(1, user.getId());
@@ -45,8 +48,7 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public User get(String id) throws ClassNotFoundException, SQLException {
-		Class.forName("com.mysql.cj.jdbc.Driver");
-		Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/springbook?serverTimezone=UTC", "spring", "book");
+		Connection c = getConnection();
 		
 		PreparedStatement ps = c.prepareStatement("select * from users where id = ?");
 		ps.setString(1, id);
@@ -63,6 +65,19 @@ public class UserDao {
 		c.close();
 		
 		return user;
+	}
+	
+	/**
+	 * 중복 코드의 메소드 추출 : Connection을 가져오는 중복 코드 분리 -> 리팩토링-메소드추출기법★
+	 * @return Connection
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
+	private Connection getConnection() throws ClassNotFoundException, SQLException {
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/springbook?serverTimezone=UTC", "spring", "book");
+		
+		return c;
 	}
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
