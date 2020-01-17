@@ -16,8 +16,8 @@ import springbook.user.domain.User;
  * @history
  * 1-1장 초난감DAO
  * 1-2장 DAO의 분리
- *  - 중복 코드의 메소드 추출 : Connection을 가져오는 중복 코드 분리 -> 리팩토링-메소드추출기법★
- *  - DB 커넥션 만들기의 독립 / 상속을 통한 확장
+ *  - 중복 코드의 메소드 추출 : Connection을 가져오는 중복 코드 분리 									-> 리팩토링-메소드추출기법★
+ *  - DB 커넥션 만들기의 독립 / 상속을 통한 확장 : 추상메소드나 오버라이딩이 가능한 메소드로 만든 뒤 구현해서 사용하는 방법 	-> 템플릿 메소드 패턴&팩토리 메소드 패턴★
  */
 public abstract class UserDao {
 	
@@ -81,6 +81,12 @@ public abstract class UserDao {
 		return c;
 	}*/
 	
+	/**
+	* 1.2.3 DB 커넥션 만들기의 독립 / 상속을 통한 확장
+	* @return
+	* @throws ClassNotFoundException
+	* @throws SQLException
+	*/
 	public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
 	
 }
