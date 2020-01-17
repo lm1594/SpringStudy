@@ -81,6 +81,12 @@ public abstract class UserDao {
 		return c;
 	}*/
 	
+	/**
+	 * 1.2.3 DB 커넥션 만들기의 독립 / 상속을 통한 확장
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
 	public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
 	
 }
