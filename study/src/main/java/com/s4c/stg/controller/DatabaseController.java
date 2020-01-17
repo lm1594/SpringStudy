@@ -15,9 +15,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.s4c.stg.service.UserService;
 import com.s4c.stg.user.UserVO;
  
- 
+/**
+ * mybatis 테스트 컨트롤러
+ * @author 이경민
+ * @since 2020.01.17
+ */
 @Controller
-public class DatabaseController{
+public class DatabaseController {
      
 private static final Logger logger =  LoggerFactory.getLogger(DatabaseController.class);
      

@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
  
 /**
- * Handles requests for the application home page.
+ * 홈 컨트롤러
+ * @author 이경민
+ * @since 2020.01.17
  */
 @Controller
 public class HomeController {
