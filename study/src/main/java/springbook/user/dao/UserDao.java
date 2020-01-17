@@ -17,8 +17,9 @@ import springbook.user.domain.User;
  * 1-1장 초난감DAO
  * 1-2장 DAO의 분리
  *  - 중복 코드의 메소드 추출 : Connection을 가져오는 중복 코드 분리 -> 리팩토링-메소드추출기법★
+ *  - DB 커넥션 만들기의 독립 / 상속을 통한 확장
  */
-public class UserDao {
+public abstract class UserDao {
 	
 	/**
 	 * 사용자 생성
@@ -73,29 +74,13 @@ public class UserDao {
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	private Connection getConnection() throws ClassNotFoundException, SQLException {
+	/*private Connection getConnection() throws ClassNotFoundException, SQLException {
 		Class.forName("com.mysql.cj.jdbc.Driver");
 		Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/springbook?serverTimezone=UTC", "spring", "book");
 		
 		return c;
-	}
+	}*/
 	
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		UserDao dao = new UserDao();
-		
-		User user = new User();
-		user.setId("kyounmgmin");
-		user.setName("이경민");
-		user.setPassword("123456");
-		
-		dao.add(user);
-		
-		System.out.println(user.getId() + " 등록 성공");
-		
-		User user2 = dao.get(user.getId());
-		System.out.println(user2.getName());
-		System.out.println(user2.getPassword());
-		
-		System.out.println(user2.getId() + " 조회 성공");
-	}
+	public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
+	
 }
