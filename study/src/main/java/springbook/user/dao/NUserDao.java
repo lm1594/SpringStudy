@@ -8,7 +8,7 @@ import java.sql.SQLException;
  * @author 이경민
  * @since 2020.01.17
  */
-public class NUserDao extends UserDao{
+//public class NUserDao extends UserDao{
 	
 	/**
 	 * 상속을 통해 확장된 getConnection() 메소드
@@ -19,4 +19,4 @@ public class NUserDao extends UserDao{
 //		return null;
 //	}
 	
-}
+//}

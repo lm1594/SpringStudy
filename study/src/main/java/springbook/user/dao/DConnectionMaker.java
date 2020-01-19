@@ -1,6 +1,7 @@
 package springbook.user.dao;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
@@ -15,7 +16,10 @@ public class DConnectionMaker implements ConnectionMaker{
 	@Override
 	public Connection makeConeection() throws ClassNotFoundException, SQLException {
 		// TODO D 사의 독자적인 방법으로 Connection을 생성하는 코드작성!!
-		return null;
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/springbook?serverTimezone=UTC", "spring", "book");
+		
+		return c;
 	}
 	
 }
