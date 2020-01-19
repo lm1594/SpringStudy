@@ -26,11 +26,6 @@ import springbook.user.domain.User;
 public class UserDao {
 	
 	/**
-	 * 1.3.1 클래스의 분리 : 두 개의 관심사를 본격적으로 독립시키면서 동시에 손쉽게 확장할 수 있는 방법
-	 */
-	//private SimpleConnectionMaker simpleConnectionMaker;
-	
-	/**
 	 * 1.3.2 인터페이스의 도입 : 두 개의 클래스가 서로 긴밀하게 연결되어 있지 않도록 중간에 추상적인 느슨한 연결고리를 만들어주는 것
 	 */
 	private ConnectionMaker connectionMaker;
@@ -87,26 +82,5 @@ public class UserDao {
 		
 		return user;
 	}
-	
-	/**
-	 * 중복 코드의 메소드 추출 : Connection을 가져오는 중복 코드 분리 -> 리팩토링-메소드추출기법★
-	 * @return Connection
-	 * @throws ClassNotFoundException
-	 * @throws SQLException
-	 */
-	/*private Connection getConnection() throws ClassNotFoundException, SQLException {
-		Class.forName("com.mysql.cj.jdbc.Driver");
-		Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/springbook?serverTimezone=UTC", "spring", "book");
-		
-		return c;
-	}*/
-	
-	/**
-	* 1.2.3 DB 커넥션 만들기의 독립 / 상속을 통한 확장
-	* @return
-	* @throws ClassNotFoundException
-	* @throws SQLException
-	*/
-	//public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
 	
 }
