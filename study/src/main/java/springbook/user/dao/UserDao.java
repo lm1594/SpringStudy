@@ -20,16 +20,23 @@ import springbook.user.domain.User;
  *  - DB 커넥션 만들기의 독립 / 상속을 통한 확장 : 추상메소드나 오버라이딩이 가능한 메소드로 만든 뒤 구현해서 사용하는 방법 	-> 템플릿 메소드 패턴&팩토리 메소드 패턴★
  * 1-3장 DAO의 확장
  *  - 1.3.1 클래스의 분리 : 두 개의 관심사를 본격적으로 독립시키면서 동시에 손쉽게 확장할 수 있는 방법
+ *  - 1.3.2 인터페이스의 도입 : 두 개의 클래스가 서로 긴밀하게 연결되어 있지 않도록 중간에 추상적인 느슨한 연결고리를 만들어주는 것
  */
 public abstract class UserDao {
 	
 	/**
 	 * 1.3.1 클래스의 분리 : 두 개의 관심사를 본격적으로 독립시키면서 동시에 손쉽게 확장할 수 있는 방법
 	 */
-	private SimpleConnectionMaker simpleConnectionMaker;
+	//private SimpleConnectionMaker simpleConnectionMaker;
+	
+	/**
+	 * 1.3.2 인터페이스의 도입 : 두 개의 클래스가 서로 긴밀하게 연결되어 있지 않도록 중간에 추상적인 느슨한 연결고리를 만들어주는 것
+	 */
+	private ConnectionMaker connectionMaker;
 	
 	public UserDao() {
-		simpleConnectionMaker = new SimpleConnectionMaker();
+		//simpleConnectionMaker = new SimpleConnectionMaker();
+		connectionMaker = new DConnectionMaker();
 	}
 	
 	/**
@@ -39,7 +46,7 @@ public abstract class UserDao {
 	 * @throws SQLException
 	 */
 	public void add(User user) throws ClassNotFoundException, SQLException{
-		Connection c = simpleConnectionMaker.makeNewConnection();
+		Connection c = connectionMaker.makeConeection();
 		
 		PreparedStatement ps = c.prepareStatement("insert into users(id, name, password) values (?,?,?)");
 		ps.setString(1, user.getId());
@@ -60,7 +67,7 @@ public abstract class UserDao {
 	 * @throws SQLException
 	 */
 	public User get(String id) throws ClassNotFoundException, SQLException {
-		Connection c = simpleConnectionMaker.makeNewConnection();
+		Connection c = connectionMaker.makeConeection();
 		
 		PreparedStatement ps = c.prepareStatement("select * from users where id = ?");
 		ps.setString(1, id);
