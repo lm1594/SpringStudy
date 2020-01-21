@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import springbook.user.dao.ConnectionMaker;
 import springbook.user.dao.DConnectionMaker;
+import springbook.user.dao.DaoFactory;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.User;
 
@@ -17,9 +18,8 @@ import springbook.user.domain.User;
 public class UserDaotest {
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		ConnectionMaker connectionMaker = new DConnectionMaker();
 		
-		UserDao dao = new UserDao(connectionMaker);
+		UserDao dao = new DaoFactory().userDao();
 		
 		User user = new User();
 		user.setId("kyounmgmin");
