@@ -43,7 +43,7 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public void add(User user) throws ClassNotFoundException, SQLException{
-		Connection c = connectionMaker.makeConeection();
+		Connection c = connectionMaker.makeConnection();
 		
 		PreparedStatement ps = c.prepareStatement("insert into users(id, name, password) values (?,?,?)");
 		ps.setString(1, user.getId());
@@ -64,7 +64,7 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public User get(String id) throws ClassNotFoundException, SQLException {
-		Connection c = connectionMaker.makeConeection();
+		Connection c = connectionMaker.makeConnection();
 		
 		PreparedStatement ps = c.prepareStatement("select * from users where id = ?");
 		ps.setString(1, id);
