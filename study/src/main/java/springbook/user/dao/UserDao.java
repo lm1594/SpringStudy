@@ -22,6 +22,8 @@ import springbook.user.domain.User;
  *  - 1.3.1 클래스의 분리 : 두 개의 관심사를 본격적으로 독립시키면서 동시에 손쉽게 확장할 수 있는 방법
  *  - 1.3.2 인터페이스의 도입 : 두 개의 클래스가 서로 긴밀하게 연결되어 있지 않도록 중간에 추상적인 느슨한 연결고리를 만들어주는 것
  *  - 1.3.3 관계설정 책임의 분리 : serDaotest는 UserDao와 ConnectionMaker 구현 클래스와의 런타임 오브젝트 의존관계를 설정하는 책임을 담당 -> UserDao에 있으면 안되는 다른 관심사항, 책임을 떠넘기는 작업
+ * 1-7장 의존관계 주입(DI)
+ *  - 1.7.5 메소드를 이용한 의존관계 주입
  */
 public class UserDao {
 	
@@ -30,10 +32,12 @@ public class UserDao {
 	 */
 	private ConnectionMaker connectionMaker;
 	
-	public UserDao(ConnectionMaker connectionmaker) {
-		//simpleConnectionMaker = new SimpleConnectionMaker();
-		//connectionMaker = new DConnectionMaker();
-		connectionMaker = connectionmaker;		// 1.3.3 관계설정 책임의 분리
+	/**
+	 * 1.7.5 메소드를 이용한 의존관계 주입
+	 * @param connectionMaker
+	 */
+	public void setConnectionMaker(ConnectionMaker connectionMaker) {
+		this.connectionMaker = connectionMaker;
 	}
 	
 	/**
