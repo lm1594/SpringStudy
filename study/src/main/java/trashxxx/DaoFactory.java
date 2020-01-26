@@ -1,10 +1,12 @@
-package springbook.user.dao;
+package trashxxx;
 
 import javax.sql.DataSource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
+
+import springbook.user.dao.UserDao;
 
 /**
  * 토비의 스프링

@@ -1,8 +1,10 @@
-package springbook.user.dao;
+package trashxxx;
 
 import java.sql.SQLException;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import springbook.user.dao.UserDao;
 
 /**
  * 토비의 스프링
