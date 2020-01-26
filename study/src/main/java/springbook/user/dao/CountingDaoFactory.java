@@ -13,10 +13,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CountingDaoFactory {
 	
-	@Bean
-	public UserDao userDao() {
-		return new UserDao(connectionMaker());
-	}
+//	@Bean
+//	public UserDao userDao() {
+//		return new UserDao(connectionMaker());
+//	} -1.7.5 메소드를 이용한 의존관계주입으로 인해 주석처리
 	
 	@Bean
 	public ConnectionMaker connectionMaker() {
