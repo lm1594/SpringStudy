@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.sql.DataSource;
+
 import springbook.user.domain.User;
 
 
@@ -24,20 +26,15 @@ import springbook.user.domain.User;
  *  - 1.3.3 관계설정 책임의 분리 : serDaotest는 UserDao와 ConnectionMaker 구현 클래스와의 런타임 오브젝트 의존관계를 설정하는 책임을 담당 -> UserDao에 있으면 안되는 다른 관심사항, 책임을 떠넘기는 작업
  * 1-7장 의존관계 주입(DI)
  *  - 1.7.5 메소드를 이용한 의존관계 주입
+ * 1.8장 XML을 이용한 설정
+ *  - 1.8.3 DataSource 인터페이스로 변환
  */
 public class UserDao {
 	
-	/**
-	 * 1.3.2 인터페이스의 도입 : 두 개의 클래스가 서로 긴밀하게 연결되어 있지 않도록 중간에 추상적인 느슨한 연결고리를 만들어주는 것
-	 */
-	private ConnectionMaker connectionMaker;
+	private DataSource dataSource;
 	
-	/**
-	 * 1.7.5 메소드를 이용한 의존관계 주입
-	 * @param connectionMaker
-	 */
-	public void setConnectionMaker(ConnectionMaker connectionMaker) {
-		this.connectionMaker = connectionMaker;
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
 	}
 	
 	/**
@@ -47,7 +44,7 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public void add(User user) throws ClassNotFoundException, SQLException{
-		Connection c = connectionMaker.makeConnection();
+		Connection c = dataSource.getConnection();
 		
 		PreparedStatement ps = c.prepareStatement("insert into users(id, name, password) values (?,?,?)");
 		ps.setString(1, user.getId());
@@ -68,7 +65,7 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public User get(String id) throws ClassNotFoundException, SQLException {
-		Connection c = connectionMaker.makeConnection();
+		Connection c = dataSource.getConnection();
 		
 		PreparedStatement ps = c.prepareStatement("select * from users where id = ?");
 		ps.setString(1, id);
