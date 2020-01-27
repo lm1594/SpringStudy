@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import java.sql.SQLException;
 
 import org.junit.Test;
+import org.junit.runner.JUnitCore;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 
@@ -51,6 +52,10 @@ public class UserDaoTest {
 		
 		assertThat(user2.getName(), is(user.getName()));
 		assertThat(user2.getPassword(), is(user.getPassword()));
+	}
+	
+	public static void main(String[] args) {
+		JUnitCore.main("springbook.user.test.UserDaoTest");
 	}
 
 }
