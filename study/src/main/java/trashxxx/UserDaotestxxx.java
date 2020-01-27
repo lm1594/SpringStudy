@@ -1,4 +1,4 @@
-package springbook.user.test;
+package trashxxx;
 
 import java.sql.SQLException;
 
