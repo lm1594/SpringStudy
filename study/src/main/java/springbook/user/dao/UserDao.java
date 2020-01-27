@@ -27,6 +27,8 @@ import springbook.user.domain.User;
  *  - 1.7.5 메소드를 이용한 의존관계 주입
  * 1.8장 XML을 이용한 설정
  *  - 1.8.3 DataSource 인터페이스로 변환
+ * 2.3장 개발자를 위한 테스팅 프레임워크 JUnit
+ *  - 2.3.2 테스트 결과의 일관성
  */
 public class UserDao {
 	
@@ -81,6 +83,40 @@ public class UserDao {
 		c.close();
 		
 		return user;
+	}
+	
+	/**
+	 * 모든 데이터 삭제
+	 * @throws SQLException
+	 */
+	public void deleteAll() throws SQLException {
+		Connection c = dataSource.getConnection();
+		
+		PreparedStatement ps = c.prepareStatement("delete from users");
+		ps.executeUpdate();
+		
+		ps.close();
+		c.close();
+	}
+	
+	/**
+	 * 카운트 가져오기
+	 * @throws SQLException
+	 */
+	public int getCount() throws SQLException {
+		Connection c = dataSource.getConnection();
+		
+		PreparedStatement ps = c.prepareStatement("select count(*) from users");
+		
+		ResultSet rs = ps.executeQuery();
+		rs.next();
+		int count = rs.getInt(1);
+		
+		rs.close();
+		ps.close();
+		c.close();
+		
+		return count;
 	}
 	
 }

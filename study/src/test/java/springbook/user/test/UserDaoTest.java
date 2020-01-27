@@ -27,6 +27,7 @@ import springbook.user.domain.User;
  * 		(2) 실행 작업의 번거로움
  *  - 2.2.1 테스트 검증의 자동화
  *  - 2.2.2 테스트의 효율적인 수행과 결과 관리
+ *  - 2.3.2 테스트 결과의 일관성
  */
 public class UserDaoTest {
 
@@ -39,6 +40,9 @@ public class UserDaoTest {
 		ApplicationContext context = new GenericXmlApplicationContext("applicationContext.xml");
 		UserDao dao = context.getBean("userDao", UserDao.class);
 		
+		dao.deleteAll();
+		assertThat(dao.getCount(), is(0));
+		
 		User user = new User();
 		user.setId("kyounmgmin");
 		user.setName("이경민");
@@ -46,7 +50,7 @@ public class UserDaoTest {
 		
 		dao.add(user);
 		
-		System.out.println(user.getId() + " 등록 성공");
+		assertThat(dao.getCount(), is(1));
 		
 		User user2 = dao.get(user.getId());
 		
