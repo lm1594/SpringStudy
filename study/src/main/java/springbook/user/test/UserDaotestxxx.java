@@ -21,8 +21,9 @@ import springbook.user.domain.User;
  * 		(1) 수동 확인 작업의 번거로움
  * 		(2) 실행 작업의 번거로움
  *  - 2.2.1 테스트 검증의 자동화
+ *  - 2.2.2 테스트의 효율적인 수행과 결과 관리
  */
-public class UserDaotest {
+public class UserDaotestxxx {
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		
