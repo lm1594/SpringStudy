@@ -7,6 +7,8 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.springframework.dao.EmptyResultDataAccessException;
+
 import springbook.user.domain.User;
 
 
@@ -29,6 +31,7 @@ import springbook.user.domain.User;
  *  - 1.8.3 DataSource 인터페이스로 변환
  * 2.3장 개발자를 위한 테스팅 프레임워크 JUnit
  *  - 2.3.2 테스트 결과의 일관성
+ *  - 2.3.3 포괄적인 테스트
  */
 public class UserDao {
 	
@@ -72,15 +75,22 @@ public class UserDao {
 		ps.setString(1, id);
 		
 		ResultSet rs = ps.executeQuery();
-		rs.next();
-		User user = new User();
-		user.setId(rs.getString("id"));
-		user.setName(rs.getString("name"));
-		user.setPassword(rs.getString("password"));
+		
+		User user = null;
+		if(rs.next()) {
+			user = new User();
+			user.setId(rs.getString("id"));
+			user.setName(rs.getString("name"));
+			user.setPassword(rs.getString("password"));
+		}
 		
 		rs.close();
 		ps.close();
 		c.close();
+		
+		if(user == null) {
+			throw new EmptyResultDataAccessException(1);
+		}
 		
 		return user;
 	}
