@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 
 import java.sql.SQLException;
 
+import javax.sql.DataSource;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
@@ -13,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -40,9 +44,12 @@ import springbook.user.domain.User;
  *  	-> 픽스쳐 fixture : 테스트를 수행하는 데 필요한 정보나 오브젝트 ex) dao, user 
  *  2.4장 스프링 테스트 적용
  *  - 2.4.1 테스트를 위한 애플리케이션 컨텍스트 관리
+ *  - 2.4.2 DI와 테스트
+ *  	-> 테스트 코드의 의한 DI
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
+@DirtiesContext
 public class UserDaoTest {
 	
 	@Autowired
@@ -60,6 +67,9 @@ public class UserDaoTest {
 		user1 = new User("gyumee", "박성철", "springno1");
 		user2 = new User("leegw700", "이길원", "springno2");
 		user3 = new User("bumjin", "박범진", "springno3");
+		
+		DataSource dataSource = new SingleConnectionDataSource("jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC", "spring", "book", true);
+		dao.setDataSource(dataSource);
 	}
 	
 	@Test
