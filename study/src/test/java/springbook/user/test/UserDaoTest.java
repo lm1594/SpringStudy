@@ -46,10 +46,10 @@ import springbook.user.domain.User;
  *  - 2.4.1 테스트를 위한 애플리케이션 컨텍스트 관리
  *  - 2.4.2 DI와 테스트
  *  	-> 테스트 코드의 의한 DI
+ *  	-> 테스트를 위한 별도의 DI 설정
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/applicationContext.xml")
-@DirtiesContext
+@ContextConfiguration(locations="/test-applicationContext.xml")
 public class UserDaoTest {
 	
 	@Autowired
@@ -67,9 +67,6 @@ public class UserDaoTest {
 		user1 = new User("gyumee", "박성철", "springno1");
 		user2 = new User("leegw700", "이길원", "springno2");
 		user3 = new User("bumjin", "박범진", "springno3");
-		
-		DataSource dataSource = new SingleConnectionDataSource("jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC", "spring", "book", true);
-		dao.setDataSource(dataSource);
 	}
 	
 	@Test
