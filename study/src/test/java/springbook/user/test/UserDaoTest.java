@@ -8,9 +8,13 @@ import java.sql.SQLException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import springbook.user.dao.UserDao;
 import springbook.user.domain.User;
@@ -34,19 +38,25 @@ import springbook.user.domain.User;
  *  - 2.3.5 테스트코드 개선
  *  	-> jUnit은 각 테스트마다 새로운 오브젝트를 만들어 냄 - 인스턴스 변수 초기화 됌 (독립성 보장)
  *  	-> 픽스쳐 fixture : 테스트를 수행하는 데 필요한 정보나 오브젝트 ex) dao, user 
+ *  2.4장 스프링 테스트 적용
+ *  - 2.4.1 테스트를 위한 애플리케이션 컨텍스트 관리
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="/applicationContext.xml")
 public class UserDaoTest {
 	
+	@Autowired
+	private ApplicationContext context;
+	
+	@Autowired
 	private UserDao dao;
+	
 	private User user1;
 	private User user2;
 	private User user3;
 
 	@Before
 	public void setUp() {
-		ApplicationContext context = new GenericXmlApplicationContext("applicationContext.xml");
-		dao = context.getBean("userDao", UserDao.class);
-		
 		user1 = new User("gyumee", "박성철", "springno1");
 		user2 = new User("leegw700", "이길원", "springno2");
 		user3 = new User("bumjin", "박범진", "springno3");
