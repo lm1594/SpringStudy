@@ -47,17 +47,11 @@ import springbook.user.domain.User;
  *  - 2.4.2 DI와 테스트
  *  	-> 테스트 코드의 의한 DI
  *  	-> 테스트를 위한 별도의 DI 설정
+ *  	-> 컨테이너 없는 DI 테스트 : UserDao가 스프링의 API에 의존하지 않고 자신의 관심에만 집중해서 깔끔하게 만들어진 코드이기 때문에 어떤 테스트 방법도 완벽하게 통과한다.
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/test-applicationContext.xml")
 public class UserDaoTest {
 	
-	@Autowired
-	private ApplicationContext context;
-	
-	@Autowired
 	private UserDao dao;
-	
 	private User user1;
 	private User user2;
 	private User user3;
@@ -67,6 +61,10 @@ public class UserDaoTest {
 		user1 = new User("gyumee", "박성철", "springno1");
 		user2 = new User("leegw700", "이길원", "springno2");
 		user3 = new User("bumjin", "박범진", "springno3");
+		
+		dao = new UserDao();
+		DataSource dataSource = new SingleConnectionDataSource("jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC", "spring", "book", true);
+		dao.setDataSource(dataSource);
 	}
 	
 	@Test
