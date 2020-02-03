@@ -35,6 +35,8 @@ import springbook.user.domain.User;
  *3장 템플릿
  * 3.1장 다시보는 초난감DAO
  *  - 3.1.1 예외처리 기능을 갖춘DAO 
+ * 3.2장 변하는 것과 변하지 않는 것
+ *  - 3.2.2 분리와 재사용을 위한 디자인 패턴 적용
  */
 public class UserDao {
 	
@@ -103,11 +105,24 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public void deleteAll() throws SQLException {
+
+		StatementStrategy stmt = new DeleteAllStatement();
+		jdbcContextWithStatementStrategy(stmt);
+	}
+	
+	/**
+	 * 메소드로 분리한 try/catch/finally 컨텐스트 코드
+	 * @param stmt
+	 * @throws SQLException
+	 */
+	public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
 		Connection c = null;
 		PreparedStatement ps = null;
 		try {
 			c = dataSource.getConnection();
-			ps = c.prepareStatement("delete from users");
+			
+			ps = stmt.makePreparedStatement(c);
+			
 			ps.executeUpdate();
 		}catch(SQLException e) {
 			throw e;
