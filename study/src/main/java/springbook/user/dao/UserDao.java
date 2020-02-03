@@ -32,6 +32,9 @@ import springbook.user.domain.User;
  * 2.3장 개발자를 위한 테스팅 프레임워크 JUnit
  *  - 2.3.2 테스트 결과의 일관성
  *  - 2.3.3 포괄적인 테스트
+ *3장 템플릿
+ * 3.1장 다시보는 초난감DAO
+ *  - 3.1.1 예외처리 기능을 갖춘DAO 
  */
 public class UserDao {
 	
@@ -100,13 +103,31 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public void deleteAll() throws SQLException {
-		Connection c = dataSource.getConnection();
-		
-		PreparedStatement ps = c.prepareStatement("delete from users");
-		ps.executeUpdate();
-		
-		ps.close();
-		c.close();
+		Connection c = null;
+		PreparedStatement ps = null;
+		try {
+			c = dataSource.getConnection();
+			ps = c.prepareStatement("delete from users");
+			ps.executeUpdate();
+		}catch(SQLException e) {
+			throw e;
+		}finally {
+			if(ps != null) {
+				try {
+					ps.close();
+				}catch(SQLException e) {
+				
+				}
+			}
+			
+			if(c != null) {
+				try {
+					c.close();
+				}catch(SQLException e) {
+				
+				}
+			}
+		}
 	}
 	
 	/**
@@ -114,19 +135,46 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public int getCount() throws SQLException {
-		Connection c = dataSource.getConnection();
+		Connection c = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
 		
-		PreparedStatement ps = c.prepareStatement("select count(*) from users");
+		try {
+			c = dataSource.getConnection();
+			ps = c.prepareStatement("select count(*) from users");
 		
-		ResultSet rs = ps.executeQuery();
-		rs.next();
-		int count = rs.getInt(1);
+			rs = ps.executeQuery();
+			rs.next();
+			return rs.getInt(1);
+		}catch(SQLException e) {
+			throw e;
+		}finally {
+			if(rs != null) {
+				try {
+					rs.close();
+				}catch(SQLException e) {
+				
+				}
+			}
+			
+			if(ps != null) {
+				try {
+					ps.close();
+				}catch(SQLException e) {
+				
+				}
+			}
+			
+			if(c != null) {
+				try {
+					c.close();
+				}catch(SQLException e) {
+				
+				}
+			}
+		}
 		
-		rs.close();
-		ps.close();
-		c.close();
 		
-		return count;
 	}
 	
 }
