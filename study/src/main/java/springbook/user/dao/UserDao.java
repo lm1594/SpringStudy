@@ -45,6 +45,8 @@ import springbook.user.domain.User;
  *  3.4.2 JdbcContext의 특별한 DI : 코드를 이용하는 DI
  *  	- 장점 : JdbcContext가 UserDao의 내부에서 만들어지고 사용되면서 그 관계를 외부에는 드러내지 않는다	<-> 빈을 이용한 DI는 오브젝트 사이의 실제 의존관계가 설정파일에 명확하게 드러난다.
  *  	- 단점 : JdbcContext를 여러 오브젝트가 사용하더라도 싱글톤으로 만들 수 없고 DI 작업을 위한 부가적인 코드가 필요하다. <-> 빈을 이용한 DI는 DI의 근본적인 원칙에 부합하지 않는 구체적인 클래스와의 관계가 설정에 직접 노출된다
+ *  3.5장 템플릿과 콜백
+ *   - 3.5.2 편리한 콜백의 재활용
  */
 public class UserDao {
 	
@@ -118,13 +120,7 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public void deleteAll() throws SQLException {
-		this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
-			@Override
-			public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
-				PreparedStatement ps = c.prepareStatement("delete from users");
-				return ps;
-			}
-		});
+		jdbcContext.executeSql("delete from users");
 	}
 	
 	/**

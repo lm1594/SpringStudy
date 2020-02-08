@@ -54,4 +54,17 @@ public class JdbcContext {
 			}
 		}
 	}
+	
+	/**
+	 * 변하지않는 부분을 분리시킨 deleteAll() 메소드
+	 */
+	public void executeSql(final String query) throws SQLException {
+		workWithStatementStrategy(new StatementStrategy() {
+			@Override
+			public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+				PreparedStatement ps = c.prepareStatement(query);
+				return ps;
+			}
+		});
+	}
 }
