@@ -20,19 +20,15 @@ public class Calculator {
 	 * @throws IOException
 	 */
 	public Integer calcSum(String filepath) throws IOException {
-		BufferedReaderCallback sumCallback = new BufferedReaderCallback() {
-			public Integer doSomethingWithReader(BufferedReader br) 
-					throws IOException{
-				Integer sum = 0;
-				String line = null;
-				while((line = br.readLine()) != null) {
-					sum += Integer.parseInt(line);
-				}
-				return sum;
-			}
-		};
-		
-		return fileReadTemplate(filepath, sumCallback);
+		LineCallback sumCallback = 
+				new LineCallback() {
+					@Override
+					public Integer doSomethingWithLine(String line, Integer value) {
+						// TODO Auto-generated method stub
+						return value + Integer.valueOf(line);
+					}
+				};
+		return lineReadTemplate(filepath, sumCallback, 0);
 	}
 	
 	/**
@@ -42,18 +38,15 @@ public class Calculator {
 	 * @throws IOException
 	 */
 	public Integer calcMultiply(String filepath) throws IOException{
-		BufferedReaderCallback multiplyCallback = new BufferedReaderCallback() {
-			public Integer doSomethingWithReader(BufferedReader br)
-				throws IOException {
-				Integer multiply = 1;
-				String line = null;
-				while((line = br.readLine()) != null) {
-					multiply *= Integer.valueOf(line); 
-				}
-				return multiply;
-			}
-		};
-		return fileReadTemplate(filepath, multiplyCallback);
+		LineCallback sumCallback = 
+				new LineCallback() {
+					@Override
+					public Integer doSomethingWithLine(String line, Integer value) {
+						// TODO Auto-generated method stub
+						return value * Integer.valueOf(line);
+					}
+				};
+		return lineReadTemplate(filepath, sumCallback, 1);
 	}
 	
 	/**
@@ -70,6 +63,37 @@ public class Calculator {
 			br = new BufferedReader(new FileReader(filepath));
 			Integer ret = callback.doSomethingWithReader(br);
 			return ret;
+		}catch(IOException e) {
+			System.out.println(e.getMessage());
+			throw e;
+		}finally {
+			if(br != null) {
+				try{br.close();}
+				catch(IOException e) {System.out.println(e.getMessage());} 
+			}
+		}
+	}
+
+	/**
+	 * 라인별 작업을 정의한 콜백 메소드
+	 * @param filepath
+	 * @param callback
+	 * @param initVal
+	 * @return
+	 * @throws IOException
+	 *  3.5.3 템플릿 / 콜백의 응용
+	 *  	- 템플릿 / 콜백의 재설계
+	 */
+	public Integer lineReadTemplate(String filepath, LineCallback callback, int initVal) throws IOException {
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(filepath));
+			Integer res = initVal;
+			String line = null;
+			while((line = br.readLine()) != null) {
+				res = callback.doSomethingWithLine(line, res);
+			}
+			return res;
 		}catch(IOException e) {
 			System.out.println(e.getMessage());
 			throw e;
