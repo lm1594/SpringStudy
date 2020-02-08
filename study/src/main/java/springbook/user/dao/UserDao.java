@@ -40,6 +40,7 @@ import springbook.user.domain.User;
  * 3.3장 JDBC 전략 패턴의 최적화
  *  - 3.3.1 전략 클래스의 추가 정보 : add()의 User객체
  *  - 3.3.2 전략과 클라이언트의 동거 : 두가지 문제(1.클래스 파일의 개수가 늘어난다 / 2.추가정보가 필요할 경우 오브젝트를 전달받는 생성자와 이를 저장할 인스턴스 변수를 번거롭게 만들어야 한다.) 해결(로컬 클래스, 익명 내부 클래스)
+ * 3.4장 컨텍스트와 DI
  */
 public class UserDao {
 	
@@ -49,6 +50,12 @@ public class UserDao {
 		this.dataSource = dataSource;
 	}
 	
+	private JdbcContext jdbcContext;
+	
+	public void setJdbcContext(JdbcContext jdbcContext) {
+		this.jdbcContext = jdbcContext;
+	}
+	
 	/**
 	 * 사용자 생성
 	 * @param user
@@ -56,7 +63,7 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public void add(User user) throws ClassNotFoundException, SQLException{
-		jdbcContextWithStatementStrategy(new StatementStrategy() {
+		this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
 				@Override
 				public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
 				
@@ -109,48 +116,13 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public void deleteAll() throws SQLException {
-		jdbcContextWithStatementStrategy(new StatementStrategy() {
+		this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
 			@Override
 			public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
 				PreparedStatement ps = c.prepareStatement("delete from users");
 				return ps;
 			}
 		});
-	}
-	
-	/**
-	 * 메소드로 분리한 try/catch/finally 컨텐스트 코드
-	 * @param stmt
-	 * @throws SQLException
-	 */
-	public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
-		Connection c = null;
-		PreparedStatement ps = null;
-		try {
-			c = dataSource.getConnection();
-			
-			ps = stmt.makePreparedStatement(c);
-			
-			ps.executeUpdate();
-		}catch(SQLException e) {
-			throw e;
-		}finally {
-			if(ps != null) {
-				try {
-					ps.close();
-				}catch(SQLException e) {
-				
-				}
-			}
-			
-			if(c != null) {
-				try {
-					c.close();
-				}catch(SQLException e) {
-				
-				}
-			}
-		}
 	}
 	
 	/**
