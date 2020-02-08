@@ -46,6 +46,16 @@ public class CalcSumTest {
 		assertThat(calculator.calcMultiply(getClass().getResource(this.numFilepath).getPath()), is(24));
 	}
 	
+	/**
+	 * 제네릭스를 이용한 콜백 인터페이스
+	 * @throws IOException
+	 */
+	@Test
+	public void concatenateStrings() throws IOException {
+		assertThat(calculator.concatenate(getClass().getResource(this.numFilepath).getPath()), is("1234"));
+	}
+	
+	
 	public static void main(String[] args) {
 		JUnitCore.main("springbook.learningtest.template.CalcSumTest");
 	}

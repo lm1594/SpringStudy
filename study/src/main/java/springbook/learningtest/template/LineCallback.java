@@ -7,7 +7,8 @@ package springbook.learningtest.template;
  * @history
  *  3.5.3 템플릿 / 콜백의 응용
  *  	- 템플릿 / 콜백의 재설계
+ *  	- 제네릭스를 이용한 콜백 인터페이스
  */
-public interface LineCallback {
-	Integer doSomethingWithLine(String line, Integer value);
+public interface LineCallback<T> {
+	T doSomethingWithLine(String line, T value);
 }

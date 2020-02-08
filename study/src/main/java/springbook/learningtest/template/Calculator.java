@@ -20,8 +20,8 @@ public class Calculator {
 	 * @throws IOException
 	 */
 	public Integer calcSum(String filepath) throws IOException {
-		LineCallback sumCallback = 
-				new LineCallback() {
+		LineCallback<Integer> sumCallback = 
+				new LineCallback<Integer>() {
 					@Override
 					public Integer doSomethingWithLine(String line, Integer value) {
 						// TODO Auto-generated method stub
@@ -38,8 +38,8 @@ public class Calculator {
 	 * @throws IOException
 	 */
 	public Integer calcMultiply(String filepath) throws IOException{
-		LineCallback sumCallback = 
-				new LineCallback() {
+		LineCallback<Integer> sumCallback = 
+				new LineCallback<Integer>() {
 					@Override
 					public Integer doSomethingWithLine(String line, Integer value) {
 						// TODO Auto-generated method stub
@@ -84,11 +84,11 @@ public class Calculator {
 	 *  3.5.3 템플릿 / 콜백의 응용
 	 *  	- 템플릿 / 콜백의 재설계
 	 */
-	public Integer lineReadTemplate(String filepath, LineCallback callback, int initVal) throws IOException {
+	public <T> T lineReadTemplate(String filepath, LineCallback<T> callback, T initVal) throws IOException {
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(filepath));
-			Integer res = initVal;
+			T res = initVal;
 			String line = null;
 			while((line = br.readLine()) != null) {
 				res = callback.doSomethingWithLine(line, res);
@@ -103,5 +103,23 @@ public class Calculator {
 				catch(IOException e) {System.out.println(e.getMessage());} 
 			}
 		}
+	}
+	
+	/**
+	 * 제네릭스를 이용한 콜백 인터페이스
+	 * @param filepath
+	 * @return
+	 * @throws IOException
+	 */
+	public String concatenate(String filepath) throws IOException {
+		LineCallback<String> concatenateCallback = 
+				new LineCallback<String>() {
+					@Override
+					public String doSomethingWithLine(String line, String value) {
+						// TODO Auto-generated method stub
+						return value + line;
+					}
+				};
+		return lineReadTemplate(filepath, concatenateCallback, "");
 	}
 }
