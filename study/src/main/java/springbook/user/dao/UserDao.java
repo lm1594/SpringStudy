@@ -41,19 +41,21 @@ import springbook.user.domain.User;
  *  - 3.3.1 전략 클래스의 추가 정보 : add()의 User객체
  *  - 3.3.2 전략과 클라이언트의 동거 : 두가지 문제(1.클래스 파일의 개수가 늘어난다 / 2.추가정보가 필요할 경우 오브젝트를 전달받는 생성자와 이를 저장할 인스턴스 변수를 번거롭게 만들어야 한다.) 해결(로컬 클래스, 익명 내부 클래스)
  * 3.4장 컨텍스트와 DI
+ *  3.4.1 JdbcContext의 분리
+ *  3.4.2 JdbcContext의 특별한 DI : 코드를 이용하는 DI
+ *  	- 장점 : JdbcContext가 UserDao의 내부에서 만들어지고 사용되면서 그 관계를 외부에는 드러내지 않는다	<-> 빈을 이용한 DI는 오브젝트 사이의 실제 의존관계가 설정파일에 명확하게 드러난다.
+ *  	- 단점 : JdbcContext를 여러 오브젝트가 사용하더라도 싱글톤으로 만들 수 없고 DI 작업을 위한 부가적인 코드가 필요하다. <-> 빈을 이용한 DI는 DI의 근본적인 원칙에 부합하지 않는 구체적인 클래스와의 관계가 설정에 직접 노출된다
  */
 public class UserDao {
 	
 	private DataSource dataSource;
-	
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
-	}
-	
 	private JdbcContext jdbcContext;
 	
-	public void setJdbcContext(JdbcContext jdbcContext) {
-		this.jdbcContext = jdbcContext;
+	public void setDataSource(DataSource dataSource) {
+		this.jdbcContext = new JdbcContext();
+		this.jdbcContext.setDataSource(dataSource);
+		
+		this.dataSource = dataSource;
 	}
 	
 	/**
