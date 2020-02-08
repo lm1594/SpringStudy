@@ -37,6 +37,9 @@ import springbook.user.domain.User;
  *  - 3.1.1 예외처리 기능을 갖춘DAO 
  * 3.2장 변하는 것과 변하지 않는 것
  *  - 3.2.2 분리와 재사용을 위한 디자인 패턴 적용
+ * 3.3장 JDBC 전략 패턴의 최적화
+ *  - 3.3.1 전략 클래스의 추가 정보 : add()의 User객체
+ *  - 3.3.2 전략과 클라이언트의 동거 : 두가지 문제(1.클래스 파일의 개수가 늘어난다 / 2.추가정보가 필요할 경우 오브젝트를 전달받는 생성자와 이를 저장할 인스턴스 변수를 번거롭게 만들어야 한다.) 해결(로컬 클래스, 익명 내부 클래스)
  */
 public class UserDao {
 	
@@ -53,17 +56,8 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public void add(User user) throws ClassNotFoundException, SQLException{
-		Connection c = dataSource.getConnection();
-		
-		PreparedStatement ps = c.prepareStatement("insert into users(id, name, password) values (?,?,?)");
-		ps.setString(1, user.getId());
-		ps.setString(2, user.getName());
-		ps.setString(3, user.getPassword());
-		
-		ps.executeUpdate();
-		
-		ps.close();
-		c.close();
+		StatementStrategy st = new AddStatement(user);
+		jdbcContextWithStatementStrategy(st);
 	}
 	
 	/**
