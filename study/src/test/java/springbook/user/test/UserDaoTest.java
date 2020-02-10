@@ -42,7 +42,7 @@ import springbook.user.domain.User;
  *  	-> 테스트 코드의 의한 DI
  *  	-> 테스트를 위한 별도의 DI 설정
  *  	-> 컨테이너 없는 DI 테스트 : UserDao가 스프링의 API에 의존하지 않고 자신의 관심에만 집중해서 깔끔하게 만들어진 코드이기 때문에 어떤 테스트 방법도 완벽하게 통과한다.
- *  3장 테스트
+ *  3장 템플릿
  *   -3.6.4 query() : getAll()에 대한 테스트
  */
 public class UserDaoTest {
