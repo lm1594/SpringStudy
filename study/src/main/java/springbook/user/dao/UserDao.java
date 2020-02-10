@@ -4,10 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.sql.DataSource;
 
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import springbook.user.domain.User;
 
@@ -47,17 +50,31 @@ import springbook.user.domain.User;
  *  	- 단점 : JdbcContext를 여러 오브젝트가 사용하더라도 싱글톤으로 만들 수 없고 DI 작업을 위한 부가적인 코드가 필요하다. <-> 빈을 이용한 DI는 DI의 근본적인 원칙에 부합하지 않는 구체적인 클래스와의 관계가 설정에 직접 노출된다
  *  3.5장 템플릿과 콜백
  *   - 3.5.2 편리한 콜백의 재활용
+ *  3.6장 스프링의 JdbcTemplate
+ *   - 3.6.1 update()
+ *   - 3.6.2 queryForInt()
+ *   - 3.6.3 queryForObject()
+ *   - 3.6.4 query()
+ *   - 3.6.5 재사용 가능한 콜백의 분리
  */
 public class UserDao {
 	
-	private DataSource dataSource;
-	private JdbcContext jdbcContext;
+	private RowMapper<User> userMapper = new RowMapper<User>() {
+		@Override
+		public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+			// TODO Auto-generated method stub
+			User user = new User();
+			user.setId(rs.getString("id"));
+			user.setName(rs.getString("name"));
+			user.setPassword(rs.getString("password"));
+			return user;
+		}
+	};
+	
+	private JdbcTemplate jdbcTemplate;
 	
 	public void setDataSource(DataSource dataSource) {
-		this.jdbcContext = new JdbcContext();
-		this.jdbcContext.setDataSource(dataSource);
-		
-		this.dataSource = dataSource;
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 	
 	/**
@@ -67,18 +84,7 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public void add(User user) throws ClassNotFoundException, SQLException{
-		this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
-				@Override
-				public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
-				
-				PreparedStatement ps = c.prepareStatement("insert into users(id, name, password) values (?,?,?)");
-				ps.setString(1, user.getId());
-				ps.setString(2, user.getName());
-				ps.setString(3, user.getPassword());
-				
-				return ps;
-			}
-		});
+		this.jdbcTemplate.update("insert into users(id, name, password) values(?,?,?)", user.getId(), user.getName(), user.getPassword());
 	}
 	
 	/**
@@ -89,30 +95,18 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public User get(String id) throws ClassNotFoundException, SQLException {
-		Connection c = dataSource.getConnection();
+		return this.jdbcTemplate.queryForObject("select * from users where id = ?", new Object[] {id}, this.userMapper);
+	}
+	
+	/**
+	 * 전체 조회
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
+	public List<User> getAll() throws ClassNotFoundException, SQLException {
+		return this.jdbcTemplate.query("select * from users order by id", this.userMapper);
 		
-		PreparedStatement ps = c.prepareStatement("select * from users where id = ?");
-		ps.setString(1, id);
-		
-		ResultSet rs = ps.executeQuery();
-		
-		User user = null;
-		if(rs.next()) {
-			user = new User();
-			user.setId(rs.getString("id"));
-			user.setName(rs.getString("name"));
-			user.setPassword(rs.getString("password"));
-		}
-		
-		rs.close();
-		ps.close();
-		c.close();
-		
-		if(user == null) {
-			throw new EmptyResultDataAccessException(1);
-		}
-		
-		return user;
 	}
 	
 	/**
@@ -120,7 +114,15 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public void deleteAll() throws SQLException {
-		jdbcContext.executeSql("delete from users");
+//		this.jdbcTemplate.update(new PreparedStatementCreator() {
+//			
+//			@Override
+//			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+//				// TODO Auto-generated method stub
+//				return con.prepareStatement("delete from users");
+//			}
+//		});
+		this.jdbcTemplate.update("delete from users");
 	}
 	
 	/**
@@ -128,46 +130,24 @@ public class UserDao {
 	 * @throws SQLException
 	 */
 	public int getCount() throws SQLException {
-		Connection c = null;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		
-		try {
-			c = dataSource.getConnection();
-			ps = c.prepareStatement("select count(*) from users");
-		
-			rs = ps.executeQuery();
-			rs.next();
-			return rs.getInt(1);
-		}catch(SQLException e) {
-			throw e;
-		}finally {
-			if(rs != null) {
-				try {
-					rs.close();
-				}catch(SQLException e) {
-				
-				}
-			}
-			
-			if(ps != null) {
-				try {
-					ps.close();
-				}catch(SQLException e) {
-				
-				}
-			}
-			
-			if(c != null) {
-				try {
-					c.close();
-				}catch(SQLException e) {
-				
-				}
-			}
-		}
-		
-		
+//		return this.jdbcTemplate.query(new PreparedStatementCreator() {
+//			
+//			@Override
+//			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+//				// TODO Auto-generated method stub
+//				return con.prepareStatement("select count(*) from users"); 
+//			}
+//		}, new ResultSetExtractor<Integer>() {
+//
+//			@Override
+//			public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
+//				// TODO Auto-generated method stub
+//				rs.next();
+//				return rs.getInt(1);
+//			}
+//			
+//		});
+		return this.jdbcTemplate.queryForInt("select count(*) from users");
 	}
 	
 }

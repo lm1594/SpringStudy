@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -41,6 +42,8 @@ import springbook.user.domain.User;
  *  	-> 테스트 코드의 의한 DI
  *  	-> 테스트를 위한 별도의 DI 설정
  *  	-> 컨테이너 없는 DI 테스트 : UserDao가 스프링의 API에 의존하지 않고 자신의 관심에만 집중해서 깔끔하게 만들어진 코드이기 때문에 어떤 테스트 방법도 완벽하게 통과한다.
+ *  3장 테스트
+ *   -3.6.4 query() : getAll()에 대한 테스트
  */
 public class UserDaoTest {
 	
@@ -104,6 +107,43 @@ public class UserDaoTest {
 		assertThat(dao.getCount(), is(0));
 		
 		dao.get("unknown_id");
+	}
+	
+	@Test
+	public void getAll() throws ClassNotFoundException, SQLException{
+		dao.deleteAll();
+		
+		List<User> users0 = dao.getAll();
+		assertThat(users0.size(), is(0));
+		
+		dao.add(user1);
+		List<User> users1 = dao.getAll();
+		assertThat(users1.size(), is(1));
+		checkSameUser(user1, users1.get(0));
+		
+		dao.add(user2);
+		List<User> users2 = dao.getAll();
+		assertThat(users2.size(), is(2));
+		checkSameUser(user1, users2.get(0));
+		checkSameUser(user2, users2.get(1));
+		
+		dao.add(user3);
+		List<User> users3 = dao.getAll();
+		assertThat(users3.size(), is(3));
+		checkSameUser(user3, users3.get(0));
+		checkSameUser(user1, users3.get(1));
+		checkSameUser(user2, users3.get(2));
+	}
+	
+	/**
+	 * User 오브젝트의 내용을 비교하는 검증 코드, 테스트에서 반복적으로 사용되므로 분리해놓았다.
+	 * @param user1
+	 * @param user2
+	 */
+	private void checkSameUser(User user1, User user2) {
+		assertThat(user1.getId(), is(user2.getId()));
+		assertThat(user1.getName(), is(user2.getName()));
+		assertThat(user1.getPassword(), is(user2.getPassword()));
 	}
 
 	public static void main(String[] args) {
