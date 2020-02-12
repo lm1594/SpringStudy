@@ -5,8 +5,6 @@ import java.sql.PreparedStatement;
 
 import java.sql.SQLException;
 
-import springbook.user.dao.StatementStrategy;
-
 
 /**
  * 토비의 스프링

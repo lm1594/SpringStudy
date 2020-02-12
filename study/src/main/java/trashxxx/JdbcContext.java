@@ -6,8 +6,6 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import springbook.user.dao.StatementStrategy;
-
 /**
  * 토비의 스프링
  * @author 이경민

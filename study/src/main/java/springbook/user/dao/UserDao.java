@@ -12,7 +12,10 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
+import com.mysql.jdbc.MysqlErrorNumbers;
+
 import springbook.user.domain.User;
+import springbook.user.exception.DuplicateUserIdException;
 
 
 /**
@@ -56,6 +59,8 @@ import springbook.user.domain.User;
  *   - 3.6.3 queryForObject()
  *   - 3.6.4 query()
  *   - 3.6.5 재사용 가능한 콜백의 분리
+ * 4장 예외
+ *  4.1.3 예외처리방법 
  */
 public class UserDao {
 	
@@ -83,8 +88,19 @@ public class UserDao {
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	public void add(User user) throws ClassNotFoundException, SQLException{
+	public void add(User user) {
 		this.jdbcTemplate.update("insert into users(id, name, password) values(?,?,?)", user.getId(), user.getName(), user.getPassword());
+		
+//		try {
+//			// JDBC를 이용해 user 정보를 DB에 추가하는 코드 또는
+//			// 그런 기능이 있는 다른 SQLException을 던지는 메소드를 호출하는 코드
+//		}catch(SQLException e) {
+//			if(e.getErrorCode() == MysqlErrorNumbers.ER_DUP_ENTRY) {
+//				throw new DuplicateUserIdException(e); // 예외전환
+//			}else {
+//				throw new RuntimeException(e);
+//			}
+//		}
 	}
 	
 	/**
@@ -94,7 +110,7 @@ public class UserDao {
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	public User get(String id) throws ClassNotFoundException, SQLException {
+	public User get(String id) {
 		return this.jdbcTemplate.queryForObject("select * from users where id = ?", new Object[] {id}, this.userMapper);
 	}
 	
@@ -104,7 +120,7 @@ public class UserDao {
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	public List<User> getAll() throws ClassNotFoundException, SQLException {
+	public List<User> getAll() {
 		return this.jdbcTemplate.query("select * from users order by id", this.userMapper);
 		
 	}
