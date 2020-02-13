@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import springbook.user.dao.UserDao;
+import springbook.user.dao.UserDaoJdbc;
 
 /**
  * 토비의 스프링
@@ -17,7 +17,7 @@ public class UserDaoConnectionCountTest {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		AnnotationConfigApplicationContext context =
 				new AnnotationConfigApplicationContext(CountingDaoFactory.class);
-		UserDao dao = context.getBean("userDao", UserDao.class);
+		UserDaoJdbc dao = context.getBean("userDao", UserDaoJdbc.class);
 		
 		//
 		// DAO 사용코드

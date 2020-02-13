@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
-import springbook.user.dao.UserDao;
+import springbook.user.dao.UserDaoJdbc;
 
 /**
  * 토비의 스프링
@@ -38,8 +38,8 @@ public class DaoFactory {
 	}
 	
 	@Bean
-	public UserDao userDao() {
-		UserDao userDao = new UserDao();
+	public UserDaoJdbc userDao() {
+		UserDaoJdbc userDao = new UserDaoJdbc();
 		userDao.setDataSource(dataSource());
 		return userDao;
 	}

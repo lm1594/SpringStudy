@@ -11,8 +11,15 @@ import javax.sql.DataSource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.jdbc.support.SQLExceptionTranslator;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import springbook.user.dao.UserDao;
 import springbook.user.domain.User;
@@ -44,10 +51,20 @@ import springbook.user.domain.User;
  *  	-> 컨테이너 없는 DI 테스트 : UserDao가 스프링의 API에 의존하지 않고 자신의 관심에만 집중해서 깔끔하게 만들어진 코드이기 때문에 어떤 테스트 방법도 완벽하게 통과한다.
  *  3장 템플릿
  *   -3.6.4 query() : getAll()에 대한 테스트
+ * 4장 예외  
+ *  4.2장 예외전환
+ *    - 4.2.4 기술에 독립적인 UserDao만들기
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations="/applicationContext.xml")
 public class UserDaoTest {
 	
+	@Autowired
+	private DataSource dataSource;
+	
+	@Autowired
 	private UserDao dao;
+	
 	private User user1;
 	private User user2;
 	private User user3;
@@ -58,9 +75,9 @@ public class UserDaoTest {
 		user2 = new User("leegw700", "이길원", "springno2");
 		user3 = new User("bumjin", "박범진", "springno3");
 		
-		dao = new UserDao();
-		DataSource dataSource = new SingleConnectionDataSource("jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC", "spring", "book", true);
-		dao.setDataSource(dataSource);
+//		dao = new UserDaoJdbc();
+//		DataSource dataSource = new SingleConnectionDataSource("jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC", "spring", "book", true);
+//		dao.setDataSource(dataSource);
 	}
 	
 	@Test
@@ -145,7 +162,26 @@ public class UserDaoTest {
 		assertThat(user1.getName(), is(user2.getName()));
 		assertThat(user1.getPassword(), is(user2.getPassword()));
 	}
-
+	
+	/**
+	 * 4.2.4 기술에 독립적인 UserDao만들기
+	 *  - 예외 확인 테스트
+	 */
+//	@Test(expected=DataAccessException.class)
+	@Test
+	public void duplicateKey() {
+		dao.deleteAll();
+		
+		try {
+			dao.add(user1);
+			dao.add(user1);
+		}catch(DuplicateKeyException ex) {
+			SQLException sqlEx = (SQLException)ex.getRootCause();
+			SQLExceptionTranslator set = new SQLErrorCodeSQLExceptionTranslator(this.dataSource);
+			assertThat(set.translate(null, null, sqlEx), is(DuplicateKeyException.class));
+		}
+	}
+	
 	public static void main(String[] args) {
 		JUnitCore.main("springbook.user.test.UserDaoTest");
 	}
