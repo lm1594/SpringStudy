@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import com.mysql.jdbc.MysqlErrorNumbers;
 
+import springbook.user.domain.Level;
 import springbook.user.domain.User;
 import springbook.user.exception.DuplicateUserIdException;
 
@@ -64,6 +65,9 @@ import springbook.user.exception.DuplicateUserIdException;
  *   - 4.1.3 예외처리방법 
  *  4.2장 예외전환
  *    - 4.2.4 기술에 독립적인 UserDao만들기
+ * 5장 서비스 추상화
+ *   5.1장 사용자 레벨 관리 기능 추가
+ *    - 5.1.1 필드추가
  */
 public class UserDaoJdbc implements UserDao{
 	
@@ -75,6 +79,9 @@ public class UserDaoJdbc implements UserDao{
 			user.setId(rs.getString("id"));
 			user.setName(rs.getString("name"));
 			user.setPassword(rs.getString("password"));
+			user.setLevel(Level.valueOf(rs.getInt("level")));
+			user.setLogin(rs.getInt("login"));
+			user.setRecommend(rs.getInt("recommend"));
 			return user;
 		}
 	};
@@ -92,8 +99,13 @@ public class UserDaoJdbc implements UserDao{
 	 * @throws SQLException
 	 */
 	public void add(User user) throws DuplicateKeyException{
-		this.jdbcTemplate.update("insert into users(id, name, password) values(?,?,?)", user.getId(), user.getName(), user.getPassword());
-			//		try {
+		
+		this.jdbcTemplate.update(
+				"insert into users(id, name, password, level, login, recommend) values(?,?,?,?,?,?)"
+				, user.getId(), user.getName(), user.getPassword()
+				, user.getLevel().intValue(), user.getLogin(), user.getRecommend());
+		
+//		try {
 //			// JDBC를 이용해 user 정보를 DB에 추가하는 코드 또는
 //			// 그런 기능이 있는 다른 SQLException을 던지는 메소드를 호출하는 코드
 //		}catch(SQLException e) {
