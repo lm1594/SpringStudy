@@ -68,6 +68,7 @@ import springbook.user.exception.DuplicateUserIdException;
  * 5장 서비스 추상화
  *   5.1장 사용자 레벨 관리 기능 추가
  *    - 5.1.1 필드추가
+ *    - 5.1.2 사용자 수정 기능 추가 
  */
 public class UserDaoJdbc implements UserDao{
 	
@@ -178,6 +179,16 @@ public class UserDaoJdbc implements UserDao{
 //			
 //		});
 		return this.jdbcTemplate.queryForInt("select count(*) from users");
+	}
+	
+	@Override
+	public void update(User user) {
+		// TODO Auto-generated method stub
+		this.jdbcTemplate.update(
+					"update users set name= ?, password = ?, level = ?, login = ?, recommend = ? where id = ?"
+					, user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getId()
+				);
+		
 	}
 	
 }
