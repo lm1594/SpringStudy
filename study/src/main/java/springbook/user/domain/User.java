@@ -9,8 +9,21 @@ package springbook.user.domain;
  * 5장 서비스 추상화
  *   5.1장 사용자 레벨 관리 기능 추가
  *    - 5.1.1 필드추가
+ *    - 5.1.5 코드개선
  */
 public class User {
+	
+	/**
+	 * User의 레벨 업그레이드 작업용 메소드
+	 */
+	public void upgradeLevel() {
+		Level nextLevel = this.level.nextLevel();
+		if(nextLevel == null) {
+			throw new IllegalStateException(this.level + "은 업그레이드가 불가능합니다.");
+		}else {
+			this.level = nextLevel;
+		}
+	}
 	
 	public User(String id, String name, String password, Level level, int login, int recommend) {
 		this.id = id;
