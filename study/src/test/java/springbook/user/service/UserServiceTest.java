@@ -18,6 +18,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
+import springbook.user.exception.TestUserServiceException;
+
 import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
 import static springbook.user.service.UserService.MIN_RECCOMEND_FOR_GOLD;
 
@@ -30,6 +32,8 @@ import static springbook.user.service.UserService.MIN_RECCOMEND_FOR_GOLD;
  *   5.1장 사용자 레벨 관리 기능 추가
  *    - 5.1.3 UserService.upgradeLevels()
  *    - 5.1.4 UserService.add()
+ *   5.2장 트랜잭션 서비스 추상화
+ *    - 강제 예외 발생을 통한 테스트
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
@@ -67,17 +71,17 @@ public class UserServiceTest {
 		userService.upgradeLevels();
 		
 		// 각 사용자별로 업그레이드 후의 예상 레벨을 검증한다.
-		checkLevel(users.get(0), false);
-		checkLevel(users.get(1), true);
-		checkLevel(users.get(2), false);
-		checkLevel(users.get(3), true);
-		checkLevel(users.get(4), false);
+		checkLevelUpgraded(users.get(0), false);
+		checkLevelUpgraded(users.get(1), true);
+		checkLevelUpgraded(users.get(2), false);
+		checkLevelUpgraded(users.get(3), true);
+		checkLevelUpgraded(users.get(4), false);
 	}
 	
 	/**
 	 * 5.1.3 DB에서 사용자 정보를 가져와 레벨을 확인하는 코드가 중복되므로 헬퍼 메소드로 분리했다.
 	 */
-	private void checkLevel(User user, boolean upgraded) {			// boolean upgraded -> 어떤 레벨로 바뀔것인가가 아니라, 다음 레벨로 업그레이드될 것인가 아닌가를 지정한다.
+	private void checkLevelUpgraded(User user, boolean upgraded) {			// boolean upgraded -> 어떤 레벨로 바뀔것인가가 아니라, 다음 레벨로 업그레이드될 것인가 아닌가를 지정한다.
 		User userUpdate = userDao.get(user.getId());
 		if (upgraded) {
 			assertThat(userUpdate.getLevel(), is(user.getLevel().nextLevel()));		// 업그레이드가 일어났는지 확인
@@ -108,6 +112,31 @@ public class UserServiceTest {
 		
 		assertThat(userWithLevelRead.getLevel(), is(userWithLevel.getLevel()));
 		assertThat(userWithOutLevelRead.getLevel(), is(Level.BASIC));
+	}
+	
+	/**
+	 * 5.2장 트랜잭션 서비스 추상화
+	 *  - 강제 예외 발생을 통한 테스트
+	 */
+	@Test
+	public void upgradeAllOrNothing() {
+		UserService testUserService = new TestUserService(users.get(3).getId());		// 예외를 발생시킬 네 번째 사용자의 id를 넣어서 테스트용 UserService 대역 오브젝트를 생성한다.
+		testUserService.setUserDao(this.userDao); 		// userDao를 수동 DI해준다.
+		
+		userDao.deleteAll();
+		for(User user : users) {
+			userDao.add(user);
+		}
+		
+		try {
+			// TestUserService는 업그레이드 작업 중에 예외가 발생해야 한다. 정상 종료라면 문제가 있으니 실패
+			testUserService.upgradeLevels();
+			fail("TestUserServiceException expected");
+		}catch(TestUserServiceException e) {
+			// TestUserService가 던져주는 예외를 잡아서 계속 진행되도록 한다. 그 외의 예외라면 테스트 실패 
+		}
+		
+		checkLevelUpgraded(users.get(1), false);
 	}
 	
 	public static void main(String[] args) {
