@@ -1,0 +1,120 @@
+5장 서비스 추상화 - 5.2 트랜잭션 서비스 추상화 - 5.2.2 트랜잭션 경계 설정
+
+1) JDBC 트랜잭션의 트랜잭션 경계설정 
+ 예제) 트랜잭션을 사용한 JDBC 코드
+ // DB커넥션 시작
+ Connection c = dataSource.getConnection();
+ 
+ // 트랜잭션 시작 : 트랜잭션이 존재하는 범위. 즉 트랜잭션이 시작하는 곳과 끝나는 곳을 지정하는 것을 트랜잭션 경계설정이라고 한다. 
+ c.setAutoCommit(false);													// 트랜잭션 시작
+ try {
+ 	// 하나의 트랜잭션으로 묶인 단위 작업
+ 	PreparedStatement st1 = c.prepareStatement("update users ...");
+ 	st1.executeUpdate();
+ 	
+ 	PreparedStatement st2 = c.prepareStatement("delete from users ...");
+ 	st2.executeUpdate();
+ 	
+ 	c.commit();
+ }catch (Exception e) {
+ 	// 트랜잭션 롤백
+ 	c.rollback();
+ }
+ // 트랜잭션 끝
+ 
+ c.close();
+ // DB커넥션 끝
+-----------------------------------------------------------------------------------------------
+2) UserService와 UserDao의 트랜잭션 문제
+ JdbcTemplate은 직접 만들어봤던 JdbcContext와 작업 흐름이 거의 동일하다. 하나의 템플릿 메소드 안에서 DataSource의 getConnection()메소드를 호출해서
+Connection 오브젝트를 가져오고, 작업을 마치면 Connection을 확실하게 닫아주고 템플릿 메소드를 빠져나온다. 결국 템플릿 메소드 호출 한 번에 한 개의 DB 커넥션이
+만들어지고 닫히는 일 까지 일어나는 것이다. 일반적으로 트랜잭션은 커넥션보다도 존재 범위가 짧다. 따라서 템플릿 메소드가 호출될 때마다 트랜잭션이 새로 만들어지고 메소드를 빠져
+나오기 전에  종료된다. 결국 JdbcTemplate의 메소드를 사용하는 UserDao는 각 메소드마다 하나씩의 독립적인 트랜잭션으로 실행될 수 밖에 없다.
+
+ 데이터 액세스 코드를 DAO로 만들어서 분리해놓았을 경우에는 이처럼 DAo 메소드를 호출할 때마다 하나의 새로운 트랜잭션이 만들어지는 구조가 될 수밖에 없다. DAO 메소드 내에서
+JDBC API를 직접 사용하든 JdbcTemplate을 이용하든 마찬가지다. DAO메소드에서 DB커넥션을 매번 만들기 때문에 어쩔 수 없이 나타나는 결과다. 결국 DAO를 사용하면 비즈
+니스 로직을 담고 있는 UserService 내에서 진행되는 여러 가지 작업을 하나의 트랜잭션으로 묶는 일이 불가능해진다.
+ 그렇다면 upgradeLevels()와 같이 여러 번 DB에 업데이트를 해야 하는 작업을 하나의 트랜잭션으로 만들려면 어떻게 해야 할까? 어떤 일련의 작업이 하나의 트랜잭션으로 묶이려면 
+그 작업이 진행되는 동안 DB커넥션도 하나만 사용돼야 한다. 앞에서 설명한 것처럼 트랜잭션은 Connection 오브젝트 안에서 만들어지기 때문이다. 하지만 현재는 UserService에서
+DB 커넥션을 다룰 수 있는 방법이 없다.
+
+-----------------------------------------------------------------------------------------------
+3) 비즈니스 로직 내의 트랜잭션 경계설정
+ 문제 해결을 위해 DAO 메소드 안으로 Service의 upgradeLevels() 메소드의 내용을 옮기는 방법을 생각해볼 수 있다.
+하지만 이 방식은 비즈니스 로직과 데이터 로직을 한데 묶어버리는 한심한 결과를 초래한다.
+
+ UserService와 UserDao를 그대로 둔 채로 트랜잭션을 적용하려면 결국 트랜잭션의 경계설정 작업을 UserService쪽으로 가져와야 한다. 프로그램의 흐름을 볼 때 upgradeLevels()
+메소드의 시작과 함께 트랜잭션이 시작하고 메소드를 빠져나올 때 트랜잭션이 종료돼야 하기 때문이다. UserDao가 가진 SQL이나 JDBC API를 이용한 데이터 액세스 코드는 최대한 그대로
+남겨둔 채로, UserService에는 트랜잭션 시작과 종료를 담당하는 최소한의 코드만 가져오게 만들면 어느 정도 책임이 다른 코드를 분리해둔 채로 트랜잭션 문제를 해결할 수 있다.
+
+ 트랜잭션 경계를 upgradeLevels() 메소드 안에 두려면 DB커넥션도 이 메소드 안에서 만들고, 종료시킬 필요가 있다. 결국 upgradeLevels() 메소드 안에 트랜잭션의 경계 설정을
+아래와 같은 구조로 만들어야 한다.
+
+// UserService의 upgradeLevels()의 트랜잭션 경계 구조
+public void upgradeLevels() throws Exception {
+	(1) DB Connection 생성
+	(2) 트랜잭션 시작
+	try {
+		(3) DAO 메소드 호출
+		(4) 트랜잭션 커밋
+	}catch(Exception e) {
+		(5) 트랜잭션 롤백
+		throw e;
+	}finally{
+		(6) DB Connection 종료
+	}
+}
+
+// Connection 오브젝트를 파라미터로 전달받는 UserDao메소드
+public interface UserDao {
+	public void add(Connection c, User user);
+	public User get(Connection c, String id);
+	...
+	public void update(Connection c, User user);
+}
+
+// Connection을 공유하도록 수정한 UserService 메소드
+class UserService {
+	public void upgradeLevels() throws Exception {
+		Connection c = ...;
+		
+		// 트랜잭션 시작
+		...
+		try {
+			...
+			upgradeLevel(c, user);
+			...
+		}
+		...
+		// 트랜잭션 끝
+	}
+	
+	protected void upgradeLevel(Connection c, User user) {
+		user.upgradeLevel();
+		userDao.update(user);
+	}
+}
+
+interface UserDao {
+	public update(Connection c, User user);
+	...
+}
+
+-----------------------------------------------------------------------------------------------
+4) UserService 트랜잭션 경계설정의 문제점
+UserService와 UserDao를 이런 식으로 수정하면 트랜잭션 문제는 해결할 수 있겠지만, 그 대신 여러 가지 새로운 문제가 발생한다.
+
+ 첫째는 DB 커넥션을 비롯한 리소스의 깔끔한 처리를 가능하게 했던 JdbcTemplate을 더 이상 활용할 수 없다는 점이다.결국 JDBC API를 직접 사용하는 초기 방식으로 돌아가야 한다.
+try/catch/finally 블록은 이제 UserService 내에 존재하고, UserService 코드는 JDBC 작업 코드의 전형적인 문제점을 그대로 가질 수 밖에 없다.
+ 
+ 두번째 문제점은 DAO의 메소드와 비즈니스 로직을 담고 있는 UserService의 메소드에 Connection 파라미터가 추가돼야 한다는 점이다. upgradeLevels()에서 사용하는 메소드의
+어딘가에서 DAO를 필요로 한다면, 그 사이의 모든 메소드에 걸쳐서 Connection 오브젝트가 계속 전달돼야 한다. UserService는 스프링 빈으로 선언해서 싱글톤으로 되어 있으니
+UserService의 인스턴스 변수에 이 Connection을 저장해뒀다가 다른 메소드에서 사용하게 할 수도 없다. 멀티쓰레드 환경에서는 공유하는 인스턴스 변수에 스레드별로 생성하는 정보를 저장
+하다가는 서로 덮어쓰는 일이 발생하기 때문이다. 결국 트랜잭션이 필요한 작업에 참여하는 UserService의 메소드는 Connection파라미터로 지저분해질 것이다.
+
+ 세번째 문제는 Connection 파라미터가 UserDao 인터페이스 메소드에 추가되면 UserDao는 더 이상 데이터 액세스 기술에 독립적일 수가 없다는 점이다. JPA나 하이버네이트로 UserDao의 
+구현 방식을 변경하려고 하면 Connection 대신 EntityManager나 Session 오브젝트를 UserDAO 메소드가 전달받도록 해야 한다. 결국 UserDAO 인터페이스는 바뀔 것이고, 그에
+따라 UserService 코드도 함께 수정돼야 한다. 기껏 인터페이스를 사용해 DAO를 분리하고 DI를 적용했던 수고가 물거품이 되고 말 것이다.
+
+ 마지막으로 DAO 메소드에 Connection 파라미터를 받게 하면 테스트 코드에도 영향을 미친다. 지금까지 DB 커넥션은 전혀 신경 쓰지 않고 테스트에서 UserDao를 사용할 수 있었는데,
+이제는 테스트 코드에서 직접 Connection 오브젝트를 일일이 만들어서 DAO메소드를 호출하도록 모두 변경해야 한다.

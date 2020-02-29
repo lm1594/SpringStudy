@@ -33,7 +33,8 @@ import static springbook.user.service.UserService.MIN_RECCOMEND_FOR_GOLD;
  *    - 5.1.3 UserService.upgradeLevels()
  *    - 5.1.4 UserService.add()
  *   5.2장 트랜잭션 서비스 추상화
- *    - 강제 예외 발생을 통한 테스트
+ *    5.2.1 모 아니면 도
+ *     - 강제 예외 발생을 통한 테스트
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
