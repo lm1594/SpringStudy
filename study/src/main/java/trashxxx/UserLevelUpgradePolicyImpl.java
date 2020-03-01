@@ -1,6 +1,12 @@
-package springbook.user.service;
+package trashxxx;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import springbook.user.dao.UserDao;
+import springbook.user.domain.Level;
 import springbook.user.domain.User;
+import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
+import static springbook.user.service.UserService.MIN_RECCOMEND_FOR_GOLD;
 
 /**
  * 토비의 스프링
@@ -18,7 +24,8 @@ import springbook.user.domain.User;
  *    		·코드가 자신이 있어야 할 자리에 있는가?
  *    		·앞으로 변경이 일어난다면 어떤 것이 있을 수 있고, 그 변화에 쉽게 대응할 수 있게 작성되어 있는가?
  */
-public interface UserLevelUpgradePolicy {
+public class UserLevelUpgradePolicyImpl implements UserLevelUpgradePolicy {
+	
 	/**
 	 * 업그레이드 정책 인터페이스
 	 *  - 레벨을 업그레이드 하는 정책을 유연하게 변경할 수 있도록 개선
@@ -28,6 +35,29 @@ public interface UserLevelUpgradePolicy {
 	 *  분리된 업그레이드 정책을 담은 오브젝트는 DI를 통해 UserService에 주입한다. 스프링 설정을 통해서 평상시 정책을 구현한 클래스를 UserService에서 사용하게 하다가,
 	 *  이벤트 때는 새로운 업그레이드 정책을 담은 클래스를 따로 만들어서 DI 해주면 된다. 이벤트가 끝나면 기존 업그레이드 정책 클래스로 다시 변경해준다.
 	 */
-	boolean canUpgradeLevel(User user);
-	void upgradeLevel(User user);
+
+	@Autowired
+	private UserDao userDao;
+	
+	
+	@Override
+	public boolean canUpgradeLevel(User user) {
+		Level currentLevel = user.getLevel();
+		switch(currentLevel) {
+			// 레벨별로 구분해서 조건을 판단한다.
+			case BASIC	: return (user.getLogin() >= MIN_LOGCOUNT_FOR_SILVER);
+			case SILVER	: return (user.getRecommend() >= MIN_RECCOMEND_FOR_GOLD);
+			case GOLD	: return false;
+			
+			// 현재로직에서 다룰 수 없는 레벨이 주어지면 예외를 발생시킨다. 새로운 레벨이 추가되고 로직을 수정하지 않으면 에러가 나서 확인할 수 있다.
+			default		: throw new IllegalArgumentException("Unknown Level: " + currentLevel);	
+		}
+	}
+
+	@Override
+	public void upgradeLevel(User user) {
+		user.upgradeLevel();
+		userDao.update(user);
+	}
+
 }

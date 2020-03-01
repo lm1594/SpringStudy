@@ -1,6 +1,12 @@
 package springbook.user.service;
 
+import java.sql.Connection;
 import java.util.List;
+
+import javax.sql.DataSource;
+
+import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
@@ -21,6 +27,8 @@ import springbook.user.domain.User;
  *    		·코드가 무엇을 하는 것인지 이해하기 불편하지 않은가?
  *    		·코드가 자신이 있어야 할 자리에 있는가?
  *    		·앞으로 변경이 일어난다면 어떤 것이 있을 수 있고, 그 변화에 쉽게 대응할 수 있게 작성되어 있는가?
+ *   5.2장 트랜잭션 서비스 추상화
+ *    - 5.2.3 트랜잭션 동기화 : 트랜잭션 동기화 적용
  */
 public class UserService {
 	
@@ -28,29 +36,50 @@ public class UserService {
 	public static final int MIN_RECCOMEND_FOR_GOLD = 30;
 	
 	private UserDao userDao;
-	private UserLevelUpgradePolicy userLevelUpgradePolicy;	// 업그레이드 정책 인터페이스 
 	
 	public void setUserDao (UserDao userDao) {
 		this.userDao = userDao;
 	}
 	
-	public void setUserLevelUpgradePolicy(UserLevelUpgradePolicy userLevelUpgradePolicy) {
-		this.userLevelUpgradePolicy = userLevelUpgradePolicy;
+	// 리스트5-41. 트랜잭션 동기화 방식을 적용한 UserService
+	// Connection을 생성할 때 사용할 DataSource를 DI받도록 한다. 
+	private DataSource dataSource;
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
 	}
 	
 	/**
-	 * 1.사용자 레벨 업그레이드 메소드
-	 * 2.기본 작업 흐름만 남겨둔 upgradeLevels메소드
+	 * @history
+	 * 1. 사용자 레벨 업그레이드 메소드
+	 * 2. 기본 작업 흐름만 남겨둔 upgradeLevels메소드
+	 * 3. 리스트5-41. 트랜잭션 동기화 방식을 적용한 UserService
 	 */
-	public void upgradeLevels() {
-		List<User> users = userDao.getAll();
-		for(User user : users) {
-//			if(userLevelUpgradePolicy.canUpgradeLevel(user)) {
-//				userLevelUpgradePolicy.upgradeLevel(user);
-//			}
-			if(canUpgradeLevel(user)) {
-				upgradeLevel(user);
+	public void upgradeLevels() throws Exception{
+		TransactionSynchronizationManager.initSynchronization(); 	// 트랜잭션 동기화 관리자를 이용해 동기화 작업을 초기화한다.
+		
+		// DataSourceUtils : DB커넥션 생성과 동기화를 함께 해주는 유틸리티 메소드
+		Connection c = DataSourceUtils.getConnection(dataSource);	// DB커넥션을 생성하고 트랜잭션을 시작한다. 이후의 DAO 작업은 모두 여기서 시작한 트랜잭션 안에서 진행된다.
+		c.setAutoCommit(false);
+		
+		try {
+			List<User> users = userDao.getAll();
+			for(User user : users) {
+				if(canUpgradeLevel(user)) {
+					upgradeLevel(user);
+				}
 			}
+			c.commit(); 		// 정상적으로 작업을 마치면 트랜잭션 커밋
+		}catch (Exception e) {
+			// 예외가 발생하면 롤백된다.
+			c.rollback();
+			throw e;
+		}finally {
+			// DataSourceUtils.releaseConnection : 스프링 유틸리티 메소드를 이용해 DB 커넥션을 안전하게 닫는다.
+			DataSourceUtils.releaseConnection(c, dataSource);
+			
+			// 동기화 작업 종료 및 정리
+			TransactionSynchronizationManager.unbindResource(this.dataSource);
+			TransactionSynchronizationManager.clearSynchronization();
 		}
 	}
 	

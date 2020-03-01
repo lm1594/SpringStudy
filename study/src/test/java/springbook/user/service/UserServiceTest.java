@@ -7,6 +7,8 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
@@ -46,6 +48,8 @@ public class UserServiceTest {
 	@Autowired
 	private UserDao userDao;
 	
+	@Autowired private DataSource dataSource;
+	
 	List<User> users;
 	
 	@Before
@@ -63,7 +67,7 @@ public class UserServiceTest {
 	 * 5.1.3 사용자레벨 업그레이드 테스트
 	 */
 	@Test
-	public void upgradeLevels() {
+	public void upgradeLevels() throws Exception{
 		userDao.deleteAll();
 		for(User user : users) {
 			userDao.add(user);
@@ -120,9 +124,10 @@ public class UserServiceTest {
 	 *  - 강제 예외 발생을 통한 테스트
 	 */
 	@Test
-	public void upgradeAllOrNothing() {
+	public void upgradeAllOrNothing() throws Exception{
 		UserService testUserService = new TestUserService(users.get(3).getId());		// 예외를 발생시킬 네 번째 사용자의 id를 넣어서 테스트용 UserService 대역 오브젝트를 생성한다.
 		testUserService.setUserDao(this.userDao); 		// userDao를 수동 DI해준다.
+		testUserService.setDataSource(this.dataSource);
 		
 		userDao.deleteAll();
 		for(User user : users) {
