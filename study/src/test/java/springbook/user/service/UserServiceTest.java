@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
@@ -35,8 +36,9 @@ import static springbook.user.service.UserService.MIN_RECCOMEND_FOR_GOLD;
  *    - 5.1.3 UserService.upgradeLevels()
  *    - 5.1.4 UserService.add()
  *   5.2장 트랜잭션 서비스 추상화
- *    5.2.1 모 아니면 도
+ *    - 5.2.1 모 아니면 도
  *     - 강제 예외 발생을 통한 테스트
+ *    - 5.2.4 트랜잭션 서비스 추상화 : 스프링의 트랜잭션 서비스 추상화, 트랜잭션 기술 설정의 분리
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
@@ -48,7 +50,7 @@ public class UserServiceTest {
 	@Autowired
 	private UserDao userDao;
 	
-	@Autowired private DataSource dataSource;
+	@Autowired private PlatformTransactionManager transactionManager;
 	
 	List<User> users;
 	
@@ -122,12 +124,13 @@ public class UserServiceTest {
 	/**
 	 * 5.2장 트랜잭션 서비스 추상화
 	 *  - 강제 예외 발생을 통한 테스트
+	 *  - 5.2.4 트랜잭션 서비스 추상화 : 스프링의 트랜잭션 서비스 추상화, 트랜잭션 기술 설정의 분리
 	 */
 	@Test
 	public void upgradeAllOrNothing() throws Exception{
 		UserService testUserService = new TestUserService(users.get(3).getId());		// 예외를 발생시킬 네 번째 사용자의 id를 넣어서 테스트용 UserService 대역 오브젝트를 생성한다.
-		testUserService.setUserDao(this.userDao); 		// userDao를 수동 DI해준다.
-		testUserService.setDataSource(this.dataSource);
+		testUserService.setUserDao(this.userDao); 										// userDao를 수동 DI해준다.
+		testUserService.setTransactionManager(this.transactionManager);					// userService 빈의 프로퍼티 설정과 동일한 수동 DI
 		
 		userDao.deleteAll();
 		for(User user : users) {

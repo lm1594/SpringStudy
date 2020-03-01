@@ -1,12 +1,10 @@
 package springbook.user.service;
 
-import java.sql.Connection;
 import java.util.List;
 
-import javax.sql.DataSource;
-
-import org.springframework.jdbc.datasource.DataSourceUtils;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
@@ -29,6 +27,7 @@ import springbook.user.domain.User;
  *    		·앞으로 변경이 일어난다면 어떤 것이 있을 수 있고, 그 변화에 쉽게 대응할 수 있게 작성되어 있는가?
  *   5.2장 트랜잭션 서비스 추상화
  *    - 5.2.3 트랜잭션 동기화 : 트랜잭션 동기화 적용
+ *    - 5.2.4 트랜잭션 서비스 추상화 : 스프링의 트랜잭션 서비스 추상화, 트랜잭션 기술 설정의 분리
  */
 public class UserService {
 	
@@ -41,46 +40,40 @@ public class UserService {
 		this.userDao = userDao;
 	}
 	
-	// 리스트5-41. 트랜잭션 동기화 방식을 적용한 UserService
-	// Connection을 생성할 때 사용할 DataSource를 DI받도록 한다. 
-	private DataSource dataSource;
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
+	// 리스트5-46 트랜잭션 매니저를 빈으로 분리시킨 UserService
+	private PlatformTransactionManager transactionManager;
+	// 프로퍼티 이름은 관례를 따라 transactionManager라고 만드는 것이 편리하다.
+	public void setTransactionManager(PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
 	}
-	
+
 	/**
 	 * @history
 	 * 1. 사용자 레벨 업그레이드 메소드
 	 * 2. 기본 작업 흐름만 남겨둔 upgradeLevels메소드
 	 * 3. 리스트5-41. 트랜잭션 동기화 방식을 적용한 UserService
+	 * 4. 리스트5-45. 스프링의 트랜잭션 추상화 API를 적용한 upgradeLevels()
 	 */
-	public void upgradeLevels() throws Exception{
-		TransactionSynchronizationManager.initSynchronization(); 	// 트랜잭션 동기화 관리자를 이용해 동기화 작업을 초기화한다.
+	public void upgradeLevels() {
 		
-		// DataSourceUtils : DB커넥션 생성과 동기화를 함께 해주는 유틸리티 메소드
-		Connection c = DataSourceUtils.getConnection(dataSource);	// DB커넥션을 생성하고 트랜잭션을 시작한다. 이후의 DAO 작업은 모두 여기서 시작한 트랜잭션 안에서 진행된다.
-		c.setAutoCommit(false);
+		// 트랜잭션 시작
+		TransactionStatus status = 
+					this.transactionManager.getTransaction(new DefaultTransactionDefinition());	// DI 받은 트랜잭션 매니저를 공유해서 사용한다. 멀티스레드 환경에서도 안전하다.
 		
 		try {
+			// 트랜잭션안에서 진행되는 작업
 			List<User> users = userDao.getAll();
 			for(User user : users) {
 				if(canUpgradeLevel(user)) {
 					upgradeLevel(user);
 				}
 			}
-			c.commit(); 		// 정상적으로 작업을 마치면 트랜잭션 커밋
-		}catch (Exception e) {
-			// 예외가 발생하면 롤백된다.
-			c.rollback();
+			this.transactionManager.commit(status);					// 트랜잭션 커밋
+		}catch (RuntimeException e) {
+			this.transactionManager.rollback(status);				// 트랜잭션 롤백
 			throw e;
-		}finally {
-			// DataSourceUtils.releaseConnection : 스프링 유틸리티 메소드를 이용해 DB 커넥션을 안전하게 닫는다.
-			DataSourceUtils.releaseConnection(c, dataSource);
-			
-			// 동기화 작업 종료 및 정리
-			TransactionSynchronizationManager.unbindResource(this.dataSource);
-			TransactionSynchronizationManager.clearSynchronization();
 		}
+		
 	}
 	
 	/**
