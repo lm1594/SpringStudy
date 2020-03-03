@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -39,18 +40,18 @@ import static springbook.user.service.UserService.MIN_RECCOMEND_FOR_GOLD;
  *    - 5.2.1 모 아니면 도
  *     - 강제 예외 발생을 통한 테스트
  *    - 5.2.4 트랜잭션 서비스 추상화 : 스프링의 트랜잭션 서비스 추상화, 트랜잭션 기술 설정의 분리
+ *  5장 서비스 추상화
+ *   5.4장 메일서비스 추상화
+ *    - 5.4.3 테스트를 위한 서비스 추상화 : 테스트용 메일발송 오브젝트
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
 public class UserServiceTest {
 
-	@Autowired
-	private UserService userService;
-	
-	@Autowired
-	private UserDao userDao;
-	
+	@Autowired private UserService userService;
+	@Autowired private UserDao userDao;
 	@Autowired private PlatformTransactionManager transactionManager;
+	@Autowired private MailSender mailSender;
 	
 	List<User> users;
 	
@@ -131,6 +132,9 @@ public class UserServiceTest {
 		UserService testUserService = new TestUserService(users.get(3).getId());		// 예외를 발생시킬 네 번째 사용자의 id를 넣어서 테스트용 UserService 대역 오브젝트를 생성한다.
 		testUserService.setUserDao(this.userDao); 										// userDao를 수동 DI해준다.
 		testUserService.setTransactionManager(this.transactionManager);					// userService 빈의 프로퍼티 설정과 동일한 수동 DI
+		
+		// 리스트 5-56 테스트용 UserService를 위한 메일 전송 오브젝트의 수동 DI
+		testUserService.setMailSender(mailSender);
 		
 		userDao.deleteAll();
 		for(User user : users) {

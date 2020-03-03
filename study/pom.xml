@@ -12,6 +12,37 @@
     <java.version>1.8</java.version>
     <spring.version>4.0.9.RELEASE</spring.version>
   </properties>
+  
+ 	<repositories>
+		<repository>
+		    <id>mvn2</id>
+		    <url>http://repo1.maven.org/maven2/</url>
+		    <releases>
+		        <enabled>true</enabled>
+		    </releases>
+		    <snapshots>
+		        <enabled>true</enabled>
+		    </snapshots>
+		</repository>
+		
+		<repository>
+		    <id>oracle</id>
+		    <name>ORACLE JDBC Repository</name>
+		    <url>http://maven.jahia.org/maven2</url>
+		</repository>
+		
+		<repository>
+		    <id>egovframe</id>
+		    <url>http://www.egovframe.go.kr/maven/</url>
+		    <releases>
+		        <enabled>true</enabled>
+		    </releases>
+		    <snapshots>
+		        <enabled>true</enabled>
+		    </snapshots>
+		</repository>
+	</repositories>
+  
   <dependencies>
    <dependency>
        <groupId>com.fasterxml.jackson.core</groupId>
@@ -151,6 +182,27 @@
     <artifactId>maven-resources-plugin</artifactId>
     <version>2.4.3</version>
    </dependency>
+   
+   <!-- 스프링 MailSender 추가 -->
+	<!-- https://mvnrepository.com/artifact/org.springframework/spring-context-support -->
+	<dependency>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-context-support</artifactId>
+	    <version>4.3.0.RELEASE</version>
+	</dependency>
+	<dependency>
+	    <groupId>com.sun.mail</groupId>
+	    <artifactId>javax.mail</artifactId>
+	    <version>1.5.1</version>
+	</dependency>
+   <!-- https://mvnrepository.com/artifact/javax.activation/com.springsource.javax.activation -->
+	<!-- <dependency>
+	    <groupId>javax.activation</groupId>
+	    <artifactId>com.springsource.javax.activation</artifactId>
+	    <version>1.1</version>
+	    <scope>provided</scope>
+	</dependency> -->
+		
   </dependencies>
   <build>
     <finalName>study</finalName>
