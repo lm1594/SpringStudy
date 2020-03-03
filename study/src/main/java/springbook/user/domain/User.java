@@ -10,6 +10,8 @@ package springbook.user.domain;
  *   5.1장 사용자 레벨 관리 기능 추가
  *    - 5.1.1 필드추가
  *    - 5.1.5 코드개선
+ *   5.4장 메일 서비스 추상화
+ *    - 5.4.1 JavaMail을 이용한 메일 발송 기능
  */
 public class User {
 	
@@ -25,13 +27,14 @@ public class User {
 		}
 	}
 	
-	public User(String id, String name, String password, Level level, int login, int recommend) {
+	public User(String id, String name, String password, Level level, int login, int recommend, String email) {
 		this.id = id;
 		this.name = name;
 		this.password = password;
 		this.level = level;
 		this.login = login;
 		this.recommend = recommend;
+		this.email = email;
 	}
 	
 	public User() {
@@ -44,6 +47,7 @@ public class User {
 	private Level level;
 	private int login;
 	private int recommend;
+	private String email;
 	
 	public String getId() {
 		return id;
@@ -85,6 +89,14 @@ public class User {
 
 	public void setLevel(Level level) {
 		this.level = level;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 	
 }

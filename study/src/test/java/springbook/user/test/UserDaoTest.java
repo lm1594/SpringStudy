@@ -76,9 +76,9 @@ public class UserDaoTest {
 
 	@Before
 	public void setUp() {
-		user1 = new User("gyumee", "박성철", "springno1", Level.BASIC, 1, 0);
-		user2 = new User("leegw700", "이길원", "springno2", Level.SILVER, 55, 10);
-		user3 = new User("bumjin", "박범진", "springno3", Level.GOLD, 100, 40);
+		user1 = new User("gyumee", "박성철", "springno1", Level.BASIC, 1, 0, "lm1595@naver.com");
+		user2 = new User("leegw700", "이길원", "springno2", Level.SILVER, 55, 10, "lm1595@naver.com");
+		user3 = new User("bumjin", "박범진", "springno3", Level.GOLD, 100, 40, "lm1595@naver.com");
 		
 //		dao = new UserDaoJdbc();
 //		DataSource dataSource = new SingleConnectionDataSource("jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC", "spring", "book", true);
@@ -167,6 +167,7 @@ public class UserDaoTest {
 		assertThat(user1.getLevel(), is(user2.getLevel()));
 		assertThat(user1.getLogin(), is(user2.getLogin()));
 		assertThat(user1.getRecommend(), is(user2.getRecommend()));
+		assertThat(user1.getEmail(), is(user2.getEmail()));
 	}
 	
 	/**

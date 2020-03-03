@@ -69,6 +69,8 @@ import springbook.user.exception.DuplicateUserIdException;
  *   5.1장 사용자 레벨 관리 기능 추가
  *    - 5.1.1 필드추가
  *    - 5.1.2 사용자 수정 기능 추가 
+ *   5.4장 메일 서비스 추상화
+ *    - 5.4.1 JavaMail을 이용한 메일 발송 기능
  */
 public class UserDaoJdbc implements UserDao{
 	
@@ -83,6 +85,7 @@ public class UserDaoJdbc implements UserDao{
 			user.setLevel(Level.valueOf(rs.getInt("level")));
 			user.setLogin(rs.getInt("login"));
 			user.setRecommend(rs.getInt("recommend"));
+			user.setEmail(rs.getString("email"));
 			return user;
 		}
 	};
@@ -102,9 +105,10 @@ public class UserDaoJdbc implements UserDao{
 	public void add(User user) throws DuplicateKeyException{
 		
 		this.jdbcTemplate.update(
-				"insert into users(id, name, password, level, login, recommend) values(?,?,?,?,?,?)"
+				"insert into users(id, name, password, level, login, recommend, email) values(?,?,?,?,?,?,?)"
 				, user.getId(), user.getName(), user.getPassword()
-				, user.getLevel().intValue(), user.getLogin(), user.getRecommend());
+				, user.getLevel().intValue(), user.getLogin(), user.getRecommend()
+				, user.getEmail());
 		
 //		try {
 //			// JDBC를 이용해 user 정보를 DB에 추가하는 코드 또는
@@ -185,8 +189,8 @@ public class UserDaoJdbc implements UserDao{
 	public void update(User user) {
 		// TODO Auto-generated method stub
 		this.jdbcTemplate.update(
-					"update users set name= ?, password = ?, level = ?, login = ?, recommend = ? where id = ?"
-					, user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getId()
+					"update users set name= ?, password = ?, level = ?, login = ?, recommend = ?, email = ? where id = ?"
+					, user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getEmail(), user.getId()
 				);
 		
 	}

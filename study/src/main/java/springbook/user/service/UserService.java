@@ -1,6 +1,16 @@
 package springbook.user.service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Properties;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -28,6 +38,8 @@ import springbook.user.domain.User;
  *   5.2장 트랜잭션 서비스 추상화
  *    - 5.2.3 트랜잭션 동기화 : 트랜잭션 동기화 적용
  *    - 5.2.4 트랜잭션 서비스 추상화 : 스프링의 트랜잭션 서비스 추상화, 트랜잭션 기술 설정의 분리
+ *   5.4장 메일 서비스 추상화
+ *    - 5.4.1 JavaMail을 이용한 메일 발송 기능
  */
 public class UserService {
 	
@@ -98,6 +110,32 @@ public class UserService {
 	protected void upgradeLevel(User user) {
 		user.upgradeLevel();
 		userDao.update(user);
+		// 리스트 5-49 레벨 업그레이드 작업 메소드 수정
+		sendUpgradeEMail(user);
+	}
+	
+	/**
+	 * 리스트 5-50 JavaMail을 이용한 메일 발송 메소드
+	 * @param user
+	 */
+	private void sendUpgradeEMail(User user) {
+		Properties props = new Properties();
+		props.put("mail.smtp.host", "mail.ksug.org");
+		Session s = Session.getInstance(props, null);
+		
+		MimeMessage message = new MimeMessage(s);
+		try {
+			message.setFrom(new InternetAddress("useradmin@ksug.org"));
+			message.addRecipient(Message.RecipientType.TO, new InternetAddress(user.getEmail()));
+			message.setSubject("Upgrade 안내");
+			message.setText("사용자님의 등급이 " + user.getLevel().name() + " 로 업그레이드되었습니다.");
+			
+			Transport.send(message);
+		}catch(AddressException e) {
+			throw new RuntimeException(e);
+		}catch(MessagingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**
