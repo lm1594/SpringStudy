@@ -1,10 +1,8 @@
 package springbook.user.service;
 
-import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
 import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
 import static springbook.user.service.UserServiceImpl.MIN_RECCOMEND_FOR_GOLD;
 
@@ -54,6 +52,8 @@ import springbook.user.exception.TestUserServiceException;
  *   6.2장 고립된 단위 테스트
  *    - 6.2.2 테스트 대상 오브젝트 고립시키기ㄷ
  *    - 6.2.4 목 프레임워크
+ *   6.3장 다이내믹 프록시와 팩토리 빈
+ *    - 6.3.4 다이내믹 프록시
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
@@ -117,41 +117,6 @@ public class UserServiceTest {
 		assertThat(updated.getId(), is(expectedId));
 		assertThat(updated.getLevel(), is(expectedLevel));
 	}
-	
-	/**
-	 * 리스트 6-14 Mockito를 적용한 테스트 코드
-	 * @throws Exception
-	 */
-//	@Test
-//	public void mockUpgradeLevels() throws Exception {
-//		UserServiceImpl userServiceImpl = new UserServiceImpl();
-//		
-//		// 다이내믹한 목 오브젝트 생성과 메소드의 리턴 값 설정, 그리고 DI까지 세 줄이면 충분하다.
-//		UserDao mockUserDao = mock(UserDao.class);
-//		when(mockUserDao.getAll()).thenReturn(this.users);
-//		userServiceImpl.setUserDao(mockUserDao);
-//		
-//		// 리턴 값이 없는 메소드를 가진 목 오브젝트는 더욱 간단하게 만들 수 있다.
-//		MailSender mockMailSender = mock(MailSender.class);
-//		userServiceImpl.setMailSender(mockMailSender);
-//		
-//		userServiceImpl.upgradeLevels();
-//		
-//		// 목 오브젝트가 제공하는 검증 기능을 통해서 어떤 메소드가 몇 번 호출 됐는지, 파라미터는 무엇인지 확인할 수 있다.
-//		verify(mockUserDao, times(2)).update(any(User.class));
-//		verify(mockUserDao, times(2)).update(any(User.class));
-//		verify(mockUserDao).update(users.get(1));
-//		assertThat(users.get(1).getLevel(), is(Level.SILVER));
-//		verify(mockUserDao).update(users.get(3));
-//		assertThat(users.get(3).getLevel(), is(Level.GOLD));
-//		
-//		ArgumentCaptor<SimpleMailMessage> mailMessageArg = 
-//					ArgumentCaptor.forClass(SimpleMailMessage.class);
-//		verity(mockMailSender, time2(2)).send(mailMessageArg.capture());		// 파라미터를 정밀하게 검사하기 위해 캡처할 수도 있다.
-//		List<SimpleMailMessage> mailMessages = mailMessageArg.getAllValues();
-//		assertThat(mailMessages.get(0).getTo()[0], is(users.get(1).getEmail()));
-//		assertThat(mailMessages.get(1).getTo()[0], is(users.get(3).getEmail()));
-//	}
 	
 	/**
 	 * 5.1.3 DB에서 사용자 정보를 가져와 레벨을 확인하는 코드가 중복되므로 헬퍼 메소드로 분리했다.
