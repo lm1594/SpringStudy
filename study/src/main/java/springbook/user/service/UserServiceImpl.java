@@ -36,7 +36,7 @@ import springbook.user.domain.User;
  *  6장 AOP
  *   6.1장 트랜잭션 코드의 분리
  *    - 6.1.1 메소드 분리
- *    - 6.1.2 DI를 이용한 클래스의 분리
+ *    - 6.1.2 DI를 이용한 클래스의 분리 : 리스트 6-4 트랜잭션 코드를 제거한 UserService 구현 클래스
  */
 public class UserServiceImpl implements UserService{
 	
@@ -46,12 +46,6 @@ public class UserServiceImpl implements UserService{
 	private UserDao userDao;
 	public void setUserDao (UserDao userDao) {
 		this.userDao = userDao;
-	}
-	
-	// 리스트5-46 트랜잭션 매니저를 빈으로 분리시킨 UserService
-	private PlatformTransactionManager transactionManager;
-	public void setTransactionManager(PlatformTransactionManager transactionManager) {	// 프로퍼티 이름은 관례를 따라 transactionManager라고 만드는 것이 편리하다.
-		this.transactionManager = transactionManager;
 	}
 	
 	//리스트 5-53 메일 전송 기능을 가진 오브젝트를 DI 받도록 수정한 UserService
@@ -68,26 +62,6 @@ public class UserServiceImpl implements UserService{
 	 * 4. 리스트5-45. 스프링의 트랜잭션 추상화 API를 적용한 upgradeLevels()
 	 */
 	public void upgradeLevels() {
-		
-		// 트랜잭션 시작
-		TransactionStatus status = 
-					this.transactionManager.getTransaction(new DefaultTransactionDefinition());	// DI 받은 트랜잭션 매니저를 공유해서 사용한다. 멀티스레드 환경에서도 안전하다.
-		
-		try {
-			upgradeLevelsInternal();
-			this.transactionManager.commit(status);					// 트랜잭션 커밋
-		}catch (RuntimeException e) {
-			this.transactionManager.rollback(status);				// 트랜잭션 롤백
-			throw e;
-		}
-		
-	}
-	
-	/**
-	 * 리스트 6-2 비즈니스 로직과 트랜잰션 경계설정의 분리
-	 * : 분리된 비즈니스 로직 코드. 트랜잭션을 적용하기 전과 동일하다.
-	 */
-	private void upgradeLevelsInternal() {
 		// 트랜잭션안에서 진행되는 작업
 		List<User> users = userDao.getAll();
 		for(User user : users) {

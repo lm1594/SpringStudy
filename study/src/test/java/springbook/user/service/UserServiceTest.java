@@ -44,12 +44,16 @@ import springbook.user.exception.TestUserServiceException;
  *   5.4장 메일서비스 추상화
  *    - 5.4.3 테스트를 위한 서비스 추상화 : 테스트용 메일발송 오브젝트
  *    - 5.4.4 테스트 대역 : 목 오브젝트를 이용한 테스트
+ *  6장 AOP
+ *   6.1장 트랜잭션 코드의 분리
+ *    - 6.1.2 DI를 이용한 클래스의 분리
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
 public class UserServiceTest {
 
-	@Autowired private UserServiceImpl userService;
+	@Autowired private UserService userService;
+	@Autowired private UserServiceImpl userServiceImpl;
 	@Autowired private UserDao userDao;
 	@Autowired private PlatformTransactionManager transactionManager;
 	@Autowired private MailSender mailSender;
@@ -71,6 +75,8 @@ public class UserServiceTest {
 	 * @history
 	 *  - 5.1.3 사용자레벨 업그레이드 테스트
 	 *  - 리스트 5-57 목 오브젝트로 만든 메일 전송 확인용 클래스
+	 *  6장
+	 *   - 리스트 6-8 목 오브젝트 설정이 필요한 테스트 코드 수정
 	 */
 	@Test
 	public void upgradeLevels() throws Exception{
@@ -81,7 +87,7 @@ public class UserServiceTest {
 		
 		// 메일 발송 결과를 테스트할 수 있도록 목 오브젝트를 만들어 UserSerivce의 의존 오브젝트로 주입해준다.
 		MockMailSender mockMailSender = new MockMailSender();
-		userService.setMailSender(mockMailSender);
+		userServiceImpl.setMailSender(mockMailSender);
 		
 		// 업그레이드 테스트, 메일 발송이 일어나면 MockMailSender오브젝트의 리스트에 그 결과가 저장된다.
 		userService.upgradeLevels();
@@ -140,15 +146,19 @@ public class UserServiceTest {
 	 * 5.2장 트랜잭션 서비스 추상화
 	 *  - 강제 예외 발생을 통한 테스트
 	 *  - 5.2.4 트랜잭션 서비스 추상화 : 스프링의 트랜잭션 서비스 추상화, 트랜잭션 기술 설정의 분리
+	 * 6장
+	 *  리스트 6-9 분리된 테스트 기능이 포함되도록 수정한 upgradeAllOrNothing()
 	 */
 	@Test
 	public void upgradeAllOrNothing() throws Exception{
-		UserServiceImpl testUserService = new TestUserService(users.get(3).getId());		// 예외를 발생시킬 네 번째 사용자의 id를 넣어서 테스트용 UserService 대역 오브젝트를 생성한다.
-		testUserService.setUserDao(this.userDao); 										// userDao를 수동 DI해준다.
-		testUserService.setTransactionManager(this.transactionManager);					// userService 빈의 프로퍼티 설정과 동일한 수동 DI
+		UserServiceImpl testUserService = new TestUserService(users.get(3).getId());// 예외를 발생시킬 네 번째 사용자의 id를 넣어서 테스트용 UserService 대역 오브젝트를 생성한다.
+		testUserService.setUserDao(this.userDao); 									// userDao를 수동 DI해준다.
+		testUserService.setMailSender(mailSender);									// 리스트 5-56 테스트용 UserService를 위한 메일 전송 오브젝트의 수동 DI
 		
-		// 리스트 5-56 테스트용 UserService를 위한 메일 전송 오브젝트의 수동 DI
-		testUserService.setMailSender(mailSender);
+		// 트랜잭션 기능을 분리한 UserServiceTx는 예외 발생용으로 수정할 필요가 없으니 그대로 사용한다.
+		UserServiceTx txUserService = new UserServiceTx();
+		txUserService.setTransactionManager(transactionManager);
+		txUserService.setUserService(testUserService);
 		
 		userDao.deleteAll();
 		for(User user : users) {
@@ -157,7 +167,7 @@ public class UserServiceTest {
 		
 		try {
 			// TestUserService는 업그레이드 작업 중에 예외가 발생해야 한다. 정상 종료라면 문제가 있으니 실패
-			testUserService.upgradeLevels();
+			txUserService.upgradeLevels();				// 트랜잭션 기능을 분리한 오브젝트를 통해 예외 발생용 TestUserService가 호출되게 해야한다.
 			fail("TestUserServiceException expected");
 		}catch(TestUserServiceException e) {
 			// TestUserService가 던져주는 예외를 잡아서 계속 진행되도록 한다. 그 외의 예외라면 테스트 실패 

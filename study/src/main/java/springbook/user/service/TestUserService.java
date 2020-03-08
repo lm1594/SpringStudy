@@ -1,9 +1,5 @@
 package springbook.user.service;
 
-import java.util.List;
-
-import springbook.user.dao.UserDao;
-import springbook.user.domain.Level;
 import springbook.user.domain.User;
 import springbook.user.exception.TestUserServiceException;
 
@@ -24,7 +20,7 @@ public class TestUserService extends UserServiceImpl{
 	public TestUserService(String id) {	// 예외를 발생시킬 User 오브젝트의 id를 지정할 수 있게 만든다.
 		this.id = id;
 	}
-
+	
 	@Override
 	protected void upgradeLevel(User user) {	// UserService의 메소드를 오버라이드 한다.
 		// TODO Auto-generated method stub
