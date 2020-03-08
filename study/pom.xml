@@ -202,6 +202,14 @@
 	    <version>1.1</version>
 	    <scope>provided</scope>
 	</dependency> -->
+	
+	<!-- mokito Framework -->
+	<dependency>
+	    <groupId>org.mockito</groupId>
+	    <artifactId>mockito-all</artifactId>
+	    <version>1.6</version>
+	    <scope>test</scope>
+	</dependency>
 		
   </dependencies>
   <build>
