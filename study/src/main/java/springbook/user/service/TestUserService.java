@@ -17,7 +17,7 @@ import springbook.user.exception.TestUserServiceException;
  *    5.2.1 모 아니면 도
  *     - 테스트용 UserService 대역
  */
-public class TestUserService extends UserService{
+public class TestUserService extends UserServiceImpl{
 	
 	private String id;
 	

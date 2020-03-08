@@ -1,14 +1,14 @@
 package springbook.user.service;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
+import static springbook.user.service.UserServiceImpl.MIN_RECCOMEND_FOR_GOLD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,9 +26,6 @@ import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 import springbook.user.exception.TestUserServiceException;
-
-import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
-import static springbook.user.service.UserService.MIN_RECCOMEND_FOR_GOLD;
 
 /**
  * 토비의 스프링
@@ -52,7 +49,7 @@ import static springbook.user.service.UserService.MIN_RECCOMEND_FOR_GOLD;
 @ContextConfiguration(locations="/applicationContext.xml")
 public class UserServiceTest {
 
-	@Autowired private UserService userService;
+	@Autowired private UserServiceImpl userService;
 	@Autowired private UserDao userDao;
 	@Autowired private PlatformTransactionManager transactionManager;
 	@Autowired private MailSender mailSender;
@@ -146,7 +143,7 @@ public class UserServiceTest {
 	 */
 	@Test
 	public void upgradeAllOrNothing() throws Exception{
-		UserService testUserService = new TestUserService(users.get(3).getId());		// 예외를 발생시킬 네 번째 사용자의 id를 넣어서 테스트용 UserService 대역 오브젝트를 생성한다.
+		UserServiceImpl testUserService = new TestUserService(users.get(3).getId());		// 예외를 발생시킬 네 번째 사용자의 id를 넣어서 테스트용 UserService 대역 오브젝트를 생성한다.
 		testUserService.setUserDao(this.userDao); 										// userDao를 수동 DI해준다.
 		testUserService.setTransactionManager(this.transactionManager);					// userService 빈의 프로퍼티 설정과 동일한 수동 DI
 		
