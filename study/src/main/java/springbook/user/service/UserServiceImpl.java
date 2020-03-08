@@ -37,6 +37,8 @@ import springbook.user.domain.User;
  *   6.1장 트랜잭션 코드의 분리
  *    - 6.1.1 메소드 분리
  *    - 6.1.2 DI를 이용한 클래스의 분리 : 리스트 6-4 트랜잭션 코드를 제거한 UserService 구현 클래스
+ *   6.2장 고립된 단위 테스트
+ *    - 6.2.2 테스트 대상 오브젝트 고립시키기
  */
 public class UserServiceImpl implements UserService{
 	
