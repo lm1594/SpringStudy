@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
 import static springbook.user.service.UserServiceImpl.MIN_RECCOMEND_FOR_GOLD;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,14 +54,13 @@ import springbook.user.exception.TestUserServiceException;
  *    - 6.2.2 테스트 대상 오브젝트 고립시키기ㄷ
  *    - 6.2.4 목 프레임워크
  *   6.3장 다이내믹 프록시와 팩토리 빈
- *    - 6.3.4 다이내믹 프록시
+ *    - 6.3.2 다이내믹 프록시
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
 public class UserServiceTest {
 
 	@Autowired private UserService userService;
-	@Autowired private UserServiceImpl userServiceImpl;
 	@Autowired private UserDao userDao;
 	@Autowired private PlatformTransactionManager transactionManager;
 	@Autowired private MailSender mailSender;
@@ -99,7 +99,7 @@ public class UserServiceTest {
 		userServiceImpl.setMailSender(mockMailSender);
 		
 		// 테스트 대상 실행 
-		userService.upgradeLevels();
+		userServiceImpl.upgradeLevels();
 		
 		List<User> updated = mockUserDao.getUpdated();							// MockUserDao로부터 업데이트 결과를 가져온다.
 		assertThat(updated.size(), is(2));										// 업데이트 횟수와 정보를 확인한다.
@@ -160,6 +160,7 @@ public class UserServiceTest {
 	 *  - 5.2.4 트랜잭션 서비스 추상화 : 스프링의 트랜잭션 서비스 추상화, 트랜잭션 기술 설정의 분리
 	 * 6장
 	 *  리스트 6-9 분리된 테스트 기능이 포함되도록 수정한 upgradeAllOrNothing()
+	 *  리스트 6-28 다이내믹 프록시를 이용한 트랜잭션 테스트
 	 */
 	@Test
 	public void upgradeAllOrNothing() throws Exception{
@@ -167,10 +168,15 @@ public class UserServiceTest {
 		testUserService.setUserDao(this.userDao); 									// userDao를 수동 DI해준다.
 		testUserService.setMailSender(mailSender);									// 리스트 5-56 테스트용 UserService를 위한 메일 전송 오브젝트의 수동 DI
 		
-		// 트랜잭션 기능을 분리한 UserServiceTx는 예외 발생용으로 수정할 필요가 없으니 그대로 사용한다.
-		UserServiceTx txUserService = new UserServiceTx();
-		txUserService.setTransactionManager(transactionManager);
-		txUserService.setUserService(testUserService);
+		TransactionHandler txHandler = new TransactionHandler();
+		// 트랜잭션 핸들러가 필요한 정보와 오브젝트를 DI해준다.
+		txHandler.setTarget(testUserService);
+		txHandler.setTransactionManager(transactionManager);
+		txHandler.setPattern("upgradeLevels");
+		UserService txUserService = (UserService)Proxy.newProxyInstance(			// UserService 인터페이스 타입의 다이내믹 프록시 생성
+				getClass().getClassLoader()
+				, new Class[] {UserService.class}
+				, txHandler);
 		
 		userDao.deleteAll();
 		for(User user : users) {
