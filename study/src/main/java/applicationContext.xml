@@ -14,38 +14,38 @@
 		<property name="dataSource" ref="dataSource" />
 	</bean>
 	
-	<bean id="UserLevelUpgradePolicy" class="trashxxx.UserLevelUpgradePolicyImpl" />
-	
-	<bean id="userService" class="org.springframework.aop.framework.ProxyFactoryBean">
-		<property name="target" ref="userServiceImpl" />
-		<property name="interceptorNames">
-			<list>
-				<value>transactionAdvisor</value>
-			</list>
-		</property>
-	</bean>
-	
-	<bean id="userServiceImpl" class="springbook.user.service.UserServiceImpl">
-		<property name="userDao" ref="userDao" />
-		<property name="mailSender" ref="mailSender" />
-	</bean>
-	
 	<bean id="mailSender" class="springbook.user.service.DummyMailSender" />
 	
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
 		<property name="dataSource" ref="dataSource" />
 	</bean>
 	
+	<!-- 유저 서비스 빈 -->
+	<bean id="userService" class="springbook.user.service.UserServiceImpl">
+		<property name="userDao" ref="userDao" />
+		<property name="mailSender" ref="mailSender" />
+	</bean>
+	
+	<!-- 테스트 유저 서비스 빈 (예외발생) $:스태틱멤버클래스, parent:프로퍼티 정의를 포함한 빈의 설정 상속-->
+	<bean id="testUserService" class="springbook.user.service.UserServiceTest$TestUserServiceImpl" parent="userService" />
+	
+	<!-- 어드바이스 -->
 	<bean id="transactionAdvice" class="springbook.user.service.TransactionAdvice">
 		<property name="transactionManager" ref="transactionManager"/>
 	</bean>
 	
-	<bean id="transactionPointcut" class="org.springframework.aop.support.NameMatchMethodPointcut">
+	<!-- 포인트컷 -->
+	<bean id="transactionPointcut" class="springbook.learningtest.jdk.proxy.NameMatchClassMethodPointcut">
+		<property name="mappedClassname" value="*ServiceImpl" />
 		<property name="mappedName" value="upgrade*" />
 	</bean>
 	
+	<!-- 어드바이스 + 포인트컷 = 어드바이저 -->
 	<bean id="transactionAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
 		<property name="advice" ref="transactionAdvice" />
 		<property name="pointcut" ref="transactionPointcut" />
 	</bean>
+	
+	<!-- 어드바이저를 이용하는 자동 프록시 생성기 -->
+	<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" />
 </beans>

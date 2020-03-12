@@ -6,7 +6,6 @@ import static org.junit.Assert.fail;
 import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
 import static springbook.user.service.UserServiceImpl.MIN_RECCOMEND_FOR_GOLD;
 
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
-import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
@@ -26,7 +24,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
@@ -61,15 +58,16 @@ import springbook.user.exception.TestUserServiceException;
  *    - 6.3.4 다이내믹 프록시를 위한 팩토리 빈
  *   6.4장 스프링의 프록시 팩토리 빈
  *    - 6.4.2 ProxyFactoryBean 적용
+ *   6.5장 스프링 AOP
+ *    - 6.5.2 DefaultAdvisorAutoProxyCreator의 적용
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
 public class UserServiceTest {
 
 	@Autowired private UserService userService;
+	@Autowired private UserService testUserService;							// 같은 타입의 빈이 두 개 존재하기 때문에 필드 이름을 기준으로 주입될 빈이 결정된다. 자동 프록시 생성기에 의해 트랜잭션 부가기능이 testUserService 빈에 적용됐는지를 확인하는 것이 목적이다.
 	@Autowired private UserDao userDao;
-	@Autowired private PlatformTransactionManager transactionManager;
-	@Autowired private MailSender mailSender;
 	@Autowired ApplicationContext context;									// 팩토리 빈을 가져오려면 애플리케이션 컨텍스트가 필요하다.
 	
 	List<User> users;
@@ -170,19 +168,10 @@ public class UserServiceTest {
 	 *  리스트 6-28 다이내믹 프록시를 이용한 트랜잭션 테스트
 	 *  리스트 6-37 트랜잭션 프록시 팩토리 빈을 적용한 테스트
 	 *  리스트 6-48 ProxyFactoryBean을 이용한 트랜잭션 테스트
+	 *  리스트 6-56 testUserService 빈을 사용하도록 수정된 테스트
 	 */
 	@Test
-	@DirtiesContext	// 컨텍스트 무효화 애노테이션
 	public void upgradeAllOrNothing() throws Exception{
-		UserServiceImpl testUserService = new TestUserService(users.get(3).getId());// 예외를 발생시킬 네 번째 사용자의 id를 넣어서 테스트용 UserService 대역 오브젝트를 생성한다.
-		testUserService.setUserDao(this.userDao); 									// userDao를 수동 DI해준다.
-		testUserService.setMailSender(mailSender);									// 리스트 5-56 테스트용 UserService를 위한 메일 전송 오브젝트의 수동 DI
-		
-		ProxyFactoryBean txProxyFactoryBean = 										// 팩토리 빈 자체를 가져와야 하므로 빈 이름에 &를 반드시 넣어야 한다.
-				context.getBean("&userService", ProxyFactoryBean.class);			// 테스트용 타깃 주입
-		txProxyFactoryBean.setTarget(testUserService);
-		UserService txUserService = (UserService) txProxyFactoryBean.getObject();	// 변경된 타깃 설정을 이용해서 트랜잭션 다이내믹 프록시 오브젝트를 다시 생성한다.
-		
 		userDao.deleteAll();
 		for(User user : users) {
 			userDao.add(user);
@@ -190,13 +179,18 @@ public class UserServiceTest {
 		
 		try {
 			// TestUserService는 업그레이드 작업 중에 예외가 발생해야 한다. 정상 종료라면 문제가 있으니 실패
-			txUserService.upgradeLevels();				// 트랜잭션 기능을 분리한 오브젝트를 통해 예외 발생용 TestUserService가 호출되게 해야한다.
+			this.testUserService.upgradeLevels();				// 트랜잭션 기능을 분리한 오브젝트를 통해 예외 발생용 TestUserService가 호출되게 해야한다.
 			fail("TestUserServiceException expected");
 		}catch(TestUserServiceException e) {
 			// TestUserService가 던져주는 예외를 잡아서 계속 진행되도록 한다. 그 외의 예외라면 테스트 실패 
 		}
 		
 		checkLevelUpgraded(users.get(1), false);
+	}
+	
+	@Test
+	public void advisorAutoProxyCreator() {
+		assertThat(testUserService, is(java.lang.reflect.Proxy.class));
 	}
 	
 	public static void main(String[] args) {
@@ -206,6 +200,19 @@ public class UserServiceTest {
 	//---------------------------------------------------------------------------------------------------------
 	// 스태틱 클래스
 	//---------------------------------------------------------------------------------------------------------
+	
+	/**
+	 * 리스트 6-54 수정한 테스트용 UserService 구현 클래스
+	 */
+	static class TestUserServiceImpl extends UserServiceImpl {
+		private String id = "madnite1";
+		
+		@Override
+		protected void upgradeLevel(User user) {
+			if(user.getId().equals(this.id)) throw new TestUserServiceException();
+			super.upgradeLevel(user);
+		}
+	}
 	
 	/**
 	 * 리스트 5-57 목 오브젝트로 만든 메일 전송 확인용 클래스
