@@ -37,11 +37,10 @@
 	<!-- 테스트 유저 서비스 빈 (예외발생) $:스태틱멤버클래스, parent:프로퍼티 정의를 포함한 빈의 설정 상속-->
 	<bean id="testUserService" class="springbook.user.service.UserServiceTest$TestUserServiceImpl" parent="userService" />
 	
-	<!-- 어드바이스 리스트 6-72 tx 스키마의 전용태그 -->
-	<tx:advice id="transactionAdvice" transaction-manager="transactionManager">
+	<!-- 어드바이스 리스트 6-80 tx스키마의 태그를 이용한 트랜잭션 어드바이스 정의 -->
+	<tx:advice id="transactionAdvice" transaction-manager="transactionManager">	<!-- bean이름이 'transactionManager'이면 transaction-manager="transactionManager"는 생략 가능 -->
 		<tx:attributes>
-			<tx:method name="get*" propagation="REQUIRED" read-only="true" timeout="30" />
-			<tx:method name="update*" propagation="REQUIRES_NEW" isolation="SERIALIZABLE" />
+			<tx:method name="get*" propagation="REQUIRED" read-only="true" />
 			<tx:method name="*" propagation="REQUIRED" />
 		</tx:attributes>
 	</tx:advice>
@@ -66,8 +65,8 @@
 	 
 	<!-- aop 네임스페이스를 적용한 AOP 설정 빈 -->
 	<aop:config>	<!-- AOP설정을 담는 부모 태그다. 필요에 따라 AspectJAdvisorAutoProxyCreator를 빈으로 등록해준다. -->
-		<aop:pointcut expression="execution(* *..*ServiceImpl.upgrade*(..))" id="transactionPointcut"/>
-		<aop:advisor advice-ref="transactionAdvice" pointcut-ref="transactionPointcut"/>
+		<!-- <aop:pointcut expression="execution(* *..*ServiceImpl.*(..))" id="transactionPointcut"/> -->
+		<aop:advisor advice-ref="transactionAdvice" pointcut="bean(*Service)"/>
 		<!-- advice와 pointcut의 ref를 프로퍼티로 갖는 DefaultBeanFactoryPointcutAdvisor를 등록해준다. -->
 	</aop:config>
 	

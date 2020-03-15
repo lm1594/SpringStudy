@@ -1,9 +1,13 @@
 package trashxxx;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import springbook.user.dao.UserDao;
 import springbook.user.domain.User;
 import springbook.user.service.UserService;
 
@@ -20,6 +24,7 @@ public class UserServiceTx implements UserService {
 	// UserService를 구현한 다른 오브젝트를 DI 받는다.
 	UserService userService;
 	PlatformTransactionManager transactionManager;
+	@Autowired UserDao userDao;
 	
 	public void setUserService(UserService userService) {
 		this.userService = userService;
@@ -46,4 +51,9 @@ public class UserServiceTx implements UserService {
 		}
 	}
 
+	@Override public User get(String id) { return userDao.get(id); }
+	@Override public List<User> getAll() { return userDao.getAll(); }
+	@Override public void deleteAll() { userDao.deleteAll(); }
+	@Override public int getCount() { return userDao.getCount(); }
+	@Override public void update(User user) { userDao.update(user); }
 }
