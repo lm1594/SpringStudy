@@ -25,6 +25,9 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
@@ -61,6 +64,8 @@ import springbook.user.exception.TestUserServiceException;
  *    - 6.4.2 ProxyFactoryBean 적용
  *   6.5장 스프링 AOP
  *    - 6.5.2 DefaultAdvisorAutoProxyCreator의 적용
+ *   6.8장 트랜잭션 지원 테스트
+ *    - 6.8.2 트랜잭션 동기화와 테스트
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
@@ -70,6 +75,7 @@ public class UserServiceTest {
 	@Autowired private UserService testUserService;							// 같은 타입의 빈이 두 개 존재하기 때문에 필드 이름을 기준으로 주입될 빈이 결정된다. 자동 프록시 생성기에 의해 트랜잭션 부가기능이 testUserService 빈에 적용됐는지를 확인하는 것이 목적이다.
 	@Autowired private UserDao userDao;
 	@Autowired ApplicationContext context;									// 팩토리 빈을 가져오려면 애플리케이션 컨텍스트가 필요하다.
+	@Autowired PlatformTransactionManager transactionManager;
 	
 	List<User> users;
 	
@@ -200,6 +206,29 @@ public class UserServiceTest {
 	@Test(expected = TransientDataAccessResourceException.class)
 	public void readOnlyTransactionAttribute() {
 		testUserService.getAll();				// 트랜잭션 속성이 제대로 적용됐다면 여기서 읽기전용 속성을 위반했기 때문에 예외가 발생해야 한다.
+	}
+	
+	/**
+	 * 리스트 6-91 간단한 테스트 메소드
+	 * 리스트 6-92 트랜잭션 매니저를 이용해 트랜잭션을 미리 시작하게 만드는 테스트
+	 * 리스트 6-93 트랜잭션 동기화 검증용 테스트
+	 * 리스트 6-96 롤백 테스트
+	 */
+	@Test
+	public void transactionSync() {
+		
+		DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();		// 트랜잭션 정의는 기본 값을 사용한다.
+		TransactionStatus txStatus = transactionManager.getTransaction(txDefinition);		// 트랜잭션 매니저에게 트랜잭션을 요청한다. 기존에 시작된 트랜잭션이 없으니 새로운 트랜잭션을 시작 시키고 트랜잭션 정보를 돌려준다. 동시에 만들어진 트랜잭션을 다른 곳에서도 사용할 수 있도록 동기화 한다.
+		
+		try {
+			// 앞에서 만들어진 트랜잭션에 모두 참여한다.
+			userService.deleteAll();
+			userService.add(users.get(0));
+			userService.add(users.get(1));
+		}finally {
+			transactionManager.rollback(txStatus);											// 테스트 결과가 어떻든 상관없이 테스트가 끝나면 무조건 롤백한다. 테스트 중에 발생했던 DB의 변경 사항은 모두 이전 상태로 복구된다.
+		}
+		
 	}
 	
 	public static void main(String[] args) {
