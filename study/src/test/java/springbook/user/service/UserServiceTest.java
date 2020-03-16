@@ -23,10 +23,12 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import springbook.user.dao.UserDao;
@@ -66,6 +68,7 @@ import springbook.user.exception.TestUserServiceException;
  *    - 6.5.2 DefaultAdvisorAutoProxyCreator의 적용
  *   6.8장 트랜잭션 지원 테스트
  *    - 6.8.2 트랜잭션 동기화와 테스트
+ *    - 6.8.3 테스트를 위한 트랜잭션 애노테이션
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
@@ -213,22 +216,18 @@ public class UserServiceTest {
 	 * 리스트 6-92 트랜잭션 매니저를 이용해 트랜잭션을 미리 시작하게 만드는 테스트
 	 * 리스트 6-93 트랜잭션 동기화 검증용 테스트
 	 * 리스트 6-96 롤백 테스트
+	 * 리스트 6-97 테스트에 적용된 @Transactional
+	 * 리스트 6-98 트랜잭션 적용확인
+	 * @Rollback : 테스트 메소드나 클래스에 사용하는 @Transactional은 애플리케이션의 클래스에 적용할 때와 디폴트 속성은 동일 / 테스트에서는 기본적으로 트랜잰션을 강제 롤백시키도록 설정 되어있음.
+	 * 리스트 6-99 테스트 트랜잭션을 커밋시키도록 설정한 테스트
 	 */
 	@Test
+	@Transactional
+	@Rollback(false)
 	public void transactionSync() {
-		
-		DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();		// 트랜잭션 정의는 기본 값을 사용한다.
-		TransactionStatus txStatus = transactionManager.getTransaction(txDefinition);		// 트랜잭션 매니저에게 트랜잭션을 요청한다. 기존에 시작된 트랜잭션이 없으니 새로운 트랜잭션을 시작 시키고 트랜잭션 정보를 돌려준다. 동시에 만들어진 트랜잭션을 다른 곳에서도 사용할 수 있도록 동기화 한다.
-		
-		try {
-			// 앞에서 만들어진 트랜잭션에 모두 참여한다.
-			userService.deleteAll();
-			userService.add(users.get(0));
-			userService.add(users.get(1));
-		}finally {
-			transactionManager.rollback(txStatus);											// 테스트 결과가 어떻든 상관없이 테스트가 끝나면 무조건 롤백한다. 테스트 중에 발생했던 DB의 변경 사항은 모두 이전 상태로 복구된다.
-		}
-		
+		userService.deleteAll();
+		userService.add(users.get(0));
+		userService.add(users.get(1));		
 	}
 	
 	public static void main(String[] args) {
