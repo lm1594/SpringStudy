@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
+import springbook.user.sqlservice.SqlService;
 
 
 /**
@@ -69,11 +70,12 @@ import springbook.user.domain.User;
  * 7장 스프링 핵심기술의 응용
  *   7.1장 SQL과 DAO의 분리
  *    - 7.1.1 XML 설정을 이용한 분리 
+ *    - 7.1.2 SQL 제공 서비스
  */
 public class UserDaoJdbc implements UserDao{
-	private Map<String, String> sqlMap;
-	public void setSqlMap(Map<String, String> sqlMap) {
-		this.sqlMap = sqlMap;
+	private SqlService sqlService;
+	public void setSqlService(SqlService sqlService) {
+		this.sqlService = sqlService;
 	}
 	
 	private RowMapper<User> userMapper = new RowMapper<User>() {
@@ -108,7 +110,7 @@ public class UserDaoJdbc implements UserDao{
 		
 		this.jdbcTemplate.update(
 				//"insert into users(id, name, password, level, login, recommend, email) values(?,?,?,?,?,?,?)"
-				this.sqlMap.get("add")
+				this.sqlService.getSql("userAdd")
 				, user.getId(), user.getName(), user.getPassword()
 				, user.getLevel().intValue(), user.getLogin(), user.getRecommend()
 				, user.getEmail());
@@ -122,7 +124,7 @@ public class UserDaoJdbc implements UserDao{
 	 * @throws SQLException
 	 */
 	public User get(String id) {
-		return this.jdbcTemplate.queryForObject(this.sqlMap.get("get"), new Object[] {id}, this.userMapper);
+		return this.jdbcTemplate.queryForObject(this.sqlService.getSql("userGet"), new Object[] {id}, this.userMapper);
 	}
 	
 	/**
@@ -132,7 +134,7 @@ public class UserDaoJdbc implements UserDao{
 	 * @throws SQLException
 	 */
 	public List<User> getAll() {
-		return this.jdbcTemplate.query(this.sqlMap.get("getAll"), this.userMapper);
+		return this.jdbcTemplate.query(this.sqlService.getSql("userGetAll"), this.userMapper);
 		
 	}
 	
@@ -141,7 +143,7 @@ public class UserDaoJdbc implements UserDao{
 	 * @throws SQLException
 	 */
 	public void deleteAll() {
-		this.jdbcTemplate.update(this.sqlMap.get("deleteAll"));
+		this.jdbcTemplate.update(this.sqlService.getSql("userDeleteAll"));
 	}
 	
 	/**
@@ -149,14 +151,14 @@ public class UserDaoJdbc implements UserDao{
 	 * @throws SQLException
 	 */
 	public int getCount() {
-		return this.jdbcTemplate.queryForInt(this.sqlMap.get("getCount"));
+		return this.jdbcTemplate.queryForInt(this.sqlService.getSql("userGetCount"));
 	}
 	
 	@Override
 	public void update(User user) {
 		// TODO Auto-generated method stub
 		this.jdbcTemplate.update(
-				this.sqlMap.get("update")
+				this.sqlService.getSql("userUpdate")
 					, user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getEmail(), user.getId()
 				);
 		
