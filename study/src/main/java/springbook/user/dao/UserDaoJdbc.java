@@ -1,23 +1,18 @@
 package springbook.user.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-import com.mysql.jdbc.MysqlErrorNumbers;
-
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
-import springbook.user.exception.DuplicateUserIdException;
 
 
 /**
@@ -71,8 +66,15 @@ import springbook.user.exception.DuplicateUserIdException;
  *    - 5.1.2 사용자 수정 기능 추가 
  *   5.4장 메일 서비스 추상화
  *    - 5.4.1 JavaMail을 이용한 메일 발송 기능
+ * 7장 스프링 핵심기술의 응용
+ *   7.1장 SQL과 DAO의 분리
+ *    - 7.1.1 XML 설정을 이용한 분리 
  */
 public class UserDaoJdbc implements UserDao{
+	private Map<String, String> sqlMap;
+	public void setSqlMap(Map<String, String> sqlMap) {
+		this.sqlMap = sqlMap;
+	}
 	
 	private RowMapper<User> userMapper = new RowMapper<User>() {
 		@Override
@@ -105,21 +107,11 @@ public class UserDaoJdbc implements UserDao{
 	public void add(User user) throws DuplicateKeyException{
 		
 		this.jdbcTemplate.update(
-				"insert into users(id, name, password, level, login, recommend, email) values(?,?,?,?,?,?,?)"
+				//"insert into users(id, name, password, level, login, recommend, email) values(?,?,?,?,?,?,?)"
+				this.sqlMap.get("add")
 				, user.getId(), user.getName(), user.getPassword()
 				, user.getLevel().intValue(), user.getLogin(), user.getRecommend()
 				, user.getEmail());
-		
-//		try {
-//			// JDBC를 이용해 user 정보를 DB에 추가하는 코드 또는
-//			// 그런 기능이 있는 다른 SQLException을 던지는 메소드를 호출하는 코드
-//		}catch(SQLException e) {
-//			if(e.getErrorCode() == MysqlErrorNumbers.ER_DUP_ENTRY) {
-//				throw new DuplicateUserIdException(e); // 예외전환
-//			}else {
-//				throw new RuntimeException(e);
-//			}
-//		}
 	}
 	
 	/**
@@ -130,7 +122,7 @@ public class UserDaoJdbc implements UserDao{
 	 * @throws SQLException
 	 */
 	public User get(String id) {
-		return this.jdbcTemplate.queryForObject("select * from users where id = ?", new Object[] {id}, this.userMapper);
+		return this.jdbcTemplate.queryForObject(this.sqlMap.get("get"), new Object[] {id}, this.userMapper);
 	}
 	
 	/**
@@ -140,7 +132,7 @@ public class UserDaoJdbc implements UserDao{
 	 * @throws SQLException
 	 */
 	public List<User> getAll() {
-		return this.jdbcTemplate.query("select * from users order by id", this.userMapper);
+		return this.jdbcTemplate.query(this.sqlMap.get("getAll"), this.userMapper);
 		
 	}
 	
@@ -149,15 +141,7 @@ public class UserDaoJdbc implements UserDao{
 	 * @throws SQLException
 	 */
 	public void deleteAll() {
-//		this.jdbcTemplate.update(new PreparedStatementCreator() {
-//			
-//			@Override
-//			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-//				// TODO Auto-generated method stub
-//				return con.prepareStatement("delete from users");
-//			}
-//		});
-		this.jdbcTemplate.update("delete from users");
+		this.jdbcTemplate.update(this.sqlMap.get("deleteAll"));
 	}
 	
 	/**
@@ -165,31 +149,14 @@ public class UserDaoJdbc implements UserDao{
 	 * @throws SQLException
 	 */
 	public int getCount() {
-//		return this.jdbcTemplate.query(new PreparedStatementCreator() {
-//			
-//			@Override
-//			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-//				// TODO Auto-generated method stub
-//				return con.prepareStatement("select count(*) from users"); 
-//			}
-//		}, new ResultSetExtractor<Integer>() {
-//
-//			@Override
-//			public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
-//				// TODO Auto-generated method stub
-//				rs.next();
-//				return rs.getInt(1);
-//			}
-//			
-//		});
-		return this.jdbcTemplate.queryForInt("select count(*) from users");
+		return this.jdbcTemplate.queryForInt(this.sqlMap.get("getCount"));
 	}
 	
 	@Override
 	public void update(User user) {
 		// TODO Auto-generated method stub
 		this.jdbcTemplate.update(
-					"update users set name= ?, password = ?, level = ?, login = ?, recommend = ?, email = ? where id = ?"
+				this.sqlMap.get("update")
 					, user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getEmail(), user.getId()
 				);
 		
