@@ -215,6 +215,22 @@
 	    <artifactId>aspectjweaver</artifactId>
 	    <version>1.8.10</version>
 	</dependency>
+	
+	<!-- https://mvnrepository.com/artifact/org.springframework/spring-oxm -->
+	<dependency>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-oxm</artifactId>
+	    <version>3.0.7.RELEASE</version>
+	</dependency>
+	
+	<!-- https://mvnrepository.com/artifact/org.codehaus.castor/castor -->
+	<dependency>
+	    <groupId>org.codehaus.castor</groupId>
+	    <artifactId>castor</artifactId>
+	    <version>1.4.1</version>
+	    <type>pom</type>
+	</dependency>
+		
   </dependencies>
   <build>
     <finalName>study</finalName>

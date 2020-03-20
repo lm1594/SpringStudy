@@ -20,7 +20,7 @@ import org.junit.runner.JUnitCore;
  * @history
  * 7장 스프링 핵심기술의 응용
  *   7.2장 XML 파일 매핑
- *   - 7.2.1 XML 파일 매핑
+ *    - 7.2.1 XML 파일 매핑
  */
 public class JaxbTest {
 
