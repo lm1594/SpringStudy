@@ -9,6 +9,6 @@ package springbook.user.sqlservice;
  *    - 7.2.4 변화를 위한 준비: 인터페이스 분리
  */
 public interface SqlRegistry {
-	void registerSql(String key, String sql);				// SQL을 키와 함께 등록한다.
+	void registerSql(String key, String sql);							// SQL을 키와 함께 등록한다.
 	String findSql(String key) throws SqlRetrievalFailureException;		// 키로 SQL을 검색한다. 검색이 실패하면 예외를 던진다.
 }
