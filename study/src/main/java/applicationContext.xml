@@ -28,11 +28,7 @@
 		<property name="sqlService" ref="sqlService" />
 	</bean>
 	
-	<bean id="sqlService" class="springbook.user.sqlservice.XmlSqlService">
-		<property name="sqlReader" ref="sqlService" />
-		<property name="sqlRegistry" ref="sqlService" />
-		<property name="sqlmapFile" value="sqlmap.xml" />
-	</bean>
+	<bean id="sqlService" class="springbook.user.sqlservice.DefaultSqlService" />
 	
 	<bean id="mailSender" class="springbook.user.service.DummyMailSender" />
 	
