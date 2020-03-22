@@ -10,6 +10,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import springbook.user.dao.UserDao;
+import springbook.user.exception.SqlNotFoundException;
 import springbook.user.exception.SqlRetrievalFailureException;
 import springbook.user.sqlservice.jaxb.SqlType;
 import springbook.user.sqlservice.jaxb.Sqlmap;
@@ -46,8 +47,8 @@ public class BaseSqlService implements SqlService{
 	public String getSql(String key) throws SqlRetrievalFailureException {
 		try {
 			return this.sqlRegistry.findSql(key);
-		}catch(SqlRetrievalFailureException e) {
-			throw e;
+		}catch(SqlNotFoundException e) {
+			throw new SqlRetrievalFailureException(e);
 		}
 	}
 

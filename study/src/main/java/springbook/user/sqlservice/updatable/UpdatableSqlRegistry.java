@@ -1,3 +1,4 @@
+package springbook.user.sqlservice.updatable;
 import java.util.Map;
 
 import springbook.user.exception.SqlUpdateFailureException;

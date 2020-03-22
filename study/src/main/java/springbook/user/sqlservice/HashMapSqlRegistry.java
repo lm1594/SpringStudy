@@ -3,6 +3,7 @@ package springbook.user.sqlservice;
 import java.util.HashMap;
 import java.util.Map;
 
+import springbook.user.exception.SqlNotFoundException;
 import springbook.user.exception.SqlRetrievalFailureException;
 
 /**
@@ -26,10 +27,10 @@ public class HashMapSqlRegistry implements SqlRegistry {
 	}
 
 	@Override
-	public String findSql(String key) throws SqlRetrievalFailureException {
+	public String findSql(String key) throws SqlNotFoundException {
 		String sql = sqlMap.get(key);
 		if(sql == null) {
-			throw new SqlRetrievalFailureException(key + "에 대한 SQL을 찾을 수 없습니다.");
+			throw new SqlNotFoundException(key + "에 대한 SQL을 찾을 수 없습니다.");
 		}else {
 			return sql;
 		}

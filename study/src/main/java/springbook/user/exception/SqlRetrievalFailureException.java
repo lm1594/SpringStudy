@@ -9,6 +9,14 @@ package springbook.user.exception;
  *    - 7.1.2 SQL 제공 서비스
  */
 public class SqlRetrievalFailureException extends RuntimeException{
+	public SqlRetrievalFailureException() {
+		// TODO Auto-generated constructor stub
+	}
+	
+	public SqlRetrievalFailureException(Exception e) {
+		super(e);
+	}
+	
 	public SqlRetrievalFailureException(String message) {
 		super(message);
 	}
