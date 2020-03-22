@@ -1,4 +1,4 @@
-package springbook.user.sqlservice;
+package springbook.user.exception;
 /**
  * 토비의 스프링
  * @author 이경민

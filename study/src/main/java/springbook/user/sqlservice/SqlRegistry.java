@@ -1,4 +1,7 @@
 package springbook.user.sqlservice;
+
+import springbook.user.exception.SqlRetrievalFailureException;
+
 /**
  * 토비의 스프링
  * @author 이경민

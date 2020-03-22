@@ -3,6 +3,8 @@ package springbook.user.sqlservice;
 import java.util.HashMap;
 import java.util.Map;
 
+import springbook.user.exception.SqlRetrievalFailureException;
+
 /**
  * 토비의 스프링
  * @author 이경민
