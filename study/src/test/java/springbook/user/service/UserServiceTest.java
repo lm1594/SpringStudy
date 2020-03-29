@@ -22,15 +22,13 @@ import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import springbook.config.TestApplicationContext;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
@@ -69,9 +67,12 @@ import springbook.user.exception.TestUserServiceException;
  *   6.8장 트랜잭션 지원 테스트
  *    - 6.8.2 트랜잭션 동기화와 테스트
  *    - 6.8.3 테스트를 위한 트랜잭션 애노테이션
+ *  7장 스프링 핵심 기술의 응용
+ *   7.6 스프링 3.1의 DI
+ *    - 7.6.1 자바 코드를 이용한 빈 설정
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/applicationContext.xml")
+@ContextConfiguration(classes={TestApplicationContext.class})
 public class UserServiceTest {
 
 	@Autowired private UserService userService;
@@ -242,7 +243,7 @@ public class UserServiceTest {
 	 * 리스트 6-54 수정한 테스트용 UserService 구현 클래스
 	 * 리스트 6-81 읽기전용 메소드에 쓰기 작업을 추가한 테스트용 클래스
 	 */
-	static class TestUserServiceImpl extends UserServiceImpl {
+	public static class TestUserService extends UserServiceImpl {
 		private String id = "madnite1";
 		
 		@Override

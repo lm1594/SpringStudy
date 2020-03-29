@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
@@ -21,6 +20,7 @@ import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import springbook.config.TestApplicationContext;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
@@ -59,9 +59,12 @@ import springbook.user.domain.User;
  *   5.1장 사용자 레벨 관리 기능 추가
  *    - 5.1.1 필드추가
  *    - 5.1.2 사용자 수정 기능 추가 
+ *  7장 스프링 핵심 기술의 응용
+ *   7.6 스프링 3.1의 DI
+ *    - 7.6.1 자바 코드를 이용한 빈 설정
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/applicationContext.xml")
+@ContextConfiguration(classes={TestApplicationContext.class})
 public class UserDaoTest {
 	
 	@Autowired

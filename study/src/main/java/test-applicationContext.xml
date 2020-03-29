@@ -1,23 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-
-	<bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
-		<property name="driverClass" value="com.mysql.cj.jdbc.Driver"></property>
-		<property name="url" value="jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC"></property>
-		<property name="username" value="spring"></property>
-		<property name="password" value="book"></property>
-	</bean>
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"					
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"			
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/aop
+						http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+						http://www.springframework.org/schema/context
+						http://www.springframework.org/schema/context/spring-context-3.0.xsd
+						http://www.springframework.org/schema/tx
+						http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+						http://www.springframework.org/schema/jdbc
+						http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+						">
+	<!-- 프록시 -->
+	<!-- 어드바이스 리스트 6-80 tx스키마의 태그를 이용한 트랜잭션 어드바이스 정의 -->
+	<tx:advice id="transactionAdvice" transaction-manager="transactionManager">	<!-- bean이름이 'transactionManager'이면 transaction-manager="transactionManager"는 생략 가능 -->
+		<tx:attributes>
+			<tx:method name="get*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="*" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+	 
+	<!-- aop 네임스페이스를 적용한 AOP 설정 빈 -->
+	<aop:config>	<!-- AOP설정을 담는 부모 태그다. 필요에 따라 AspectJAdvisorAutoProxyCreator를 빈으로 등록해준다. -->
+		<!-- <aop:pointcut expression="execution(* *..*ServiceImpl.*(..))" id="transactionPointcut"/> -->
+		<aop:advisor advice-ref="transactionAdvice" pointcut="bean(*Service)"/>
+		<!-- advice와 pointcut의 ref를 프로퍼티로 갖는 DefaultBeanFactoryPointcutAdvisor를 등록해준다. -->
+	</aop:config>
 	
-	<bean id="userDao" class="springbook.user.dao.UserDao" >
-		<property name="dataSource" ref="dataSource" />
-	</bean>
 	
-	<bean id="UserLevelUpgradePolicy" class="springbook.user.service.UserLevelUpgradePolicyImpl" />
-	
-	<bean id="userService" class="springbook.user.service.UserService">
-		<property name="userDao" ref="userDao" />
-		<property name="userLevelUpgradePolicy" ref="UserLevelUpgradePolicy" />
-	</bean>
 </beans>

@@ -30,17 +30,6 @@
 		    <name>ORACLE JDBC Repository</name>
 		    <url>http://maven.jahia.org/maven2</url>
 		</repository>
-		
-		<repository>
-		    <id>egovframe</id>
-		    <url>http://www.egovframe.go.kr/maven/</url>
-		    <releases>
-		        <enabled>true</enabled>
-		    </releases>
-		    <snapshots>
-		        <enabled>true</enabled>
-		    </snapshots>
-		</repository>
 	</repositories>
   
   <dependencies>
@@ -157,25 +146,25 @@
        <artifactId>spring-webmvc</artifactId>
        <version>${spring.version}</version>
    </dependency>
- 
-   <dependency>
-     <groupId>junit</groupId>
-     <artifactId>junit</artifactId>
-     <version>4.7</version>
-     <scope>test</scope>
-   </dependency>
    <!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
    <dependency>
 		<groupId>org.springframework</groupId>
 	    <artifactId>spring-context</artifactId>
-	    <version>3.0.7.RELEASE</version>
+	    <version>${spring.version}</version>
    </dependency>
 	
    <!-- https://mvnrepository.com/artifact/org.springframework/spring-test -->
    <dependency>
 		<groupId>org.springframework</groupId>
 	    <artifactId>spring-test</artifactId>
-	    <version>3.0.7.RELEASE</version>
+	    <version>${spring.version}</version>
+   </dependency>
+ 
+   <dependency>
+     <groupId>junit</groupId>
+     <artifactId>junit</artifactId>
+     <version>4.7</version>
+     <scope>test</scope>
    </dependency>	
    <dependency>
     <groupId>org.apache.maven.plugins</groupId>

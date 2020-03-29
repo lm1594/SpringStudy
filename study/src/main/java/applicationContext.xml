@@ -16,21 +16,20 @@
 						http://www.springframework.org/schema/jdbc
 						http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
 						">
-	<tx:annotation-driven/>			<!-- 트랜잭션 어노테이션 / 트랜잭션 애노테이션 사용을 위한 설정 -->
 	<context:annotation-config />	<!-- 코드의 애노테이션을 이용해서 부가적인 빈 설정 또는 초기화 작업을 해주는 후처리기를 등록 -->
 	
+	<!-- DB -->
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
 		<property name="driverClass" value="com.mysql.cj.jdbc.Driver"></property>
 		<property name="url" value="jdbc:mysql://localhost:3306/springbook?serverTimezone=UTC"></property>
 		<property name="username" value="spring"></property>
 		<property name="password" value="book"></property>
 	</bean>
-	
-	<bean id="userDao" class="springbook.user.dao.UserDaoJdbc" >
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
 		<property name="dataSource" ref="dataSource" />
-		<property name="sqlService" ref="sqlService" />
 	</bean>
 	
+	<!-- SQL SERVICE -->
 	<bean id="sqlService" class="springbook.user.sqlservice.OxmSqlService">
 		<property name="unmarshaller" ref="unmarshaller" />
 		<property name="sqlRegistry" ref="sqlRegistry" />
@@ -40,18 +39,27 @@
 		<property name="dataSource" ref="embeddedDatabase" />
 	</bean>
 	
+	<jdbc:embedded-database id="embeddedDatabase" type="HSQL">
+		<jdbc:script location="classpath:springbook/user/sqlservice/updatable/sqlRegistrySchema.sql"/>
+	</jdbc:embedded-database>
+	
 	<bean id="unmarshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
 		<property name="contextPath" value="springbook.user.sqlservice.jaxb" />
 	</bean>
 	
-	<bean id="mailSender" class="springbook.user.service.DummyMailSender" />
 	
-	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
+	<!-- aop -->
+	<tx:annotation-driven/>			<!-- 트랜잭션 어노테이션 / 트랜잭션 애노테이션 사용을 위한 설정 -->
+	
+	<!-- application componets -->
+	<bean id="userDao" class="springbook.user.dao.UserDaoJdbc" >
 		<property name="dataSource" ref="dataSource" />
+		<property name="sqlService" ref="sqlService" />
 	</bean>
 	
-	<!-- 유저 서비스 빈 -->
-	<bean id="userService" class="springbook.user.service.UserServiceImpl">
+	<bean id="mailSender" class="springbook.user.service.DummyMailSender" />
+	
+	<bean id="userService" class="springbook.user.service.UserServiceImpl">		<!-- 유저 서비스 빈 -->
 		<property name="userDao" ref="userDao" />
 		<property name="mailSender" ref="mailSender" />
 	</bean>
@@ -59,6 +67,8 @@
 	<!-- 테스트 유저 서비스 빈 (예외발생) $:스태틱멤버클래스, parent:프로퍼티 정의를 포함한 빈의 설정 상속-->
 	<bean id="testUserService" class="springbook.user.service.UserServiceTest$TestUserServiceImpl" parent="userService" />
 	
+	
+	<!-- 프록시 -->
 	<!-- 어드바이스 리스트 6-80 tx스키마의 태그를 이용한 트랜잭션 어드바이스 정의 -->
 	<tx:advice id="transactionAdvice" transaction-manager="transactionManager">	<!-- bean이름이 'transactionManager'이면 transaction-manager="transactionManager"는 생략 가능 -->
 		<tx:attributes>
@@ -67,23 +77,6 @@
 		</tx:attributes>
 	</tx:advice>
 	 
-	<!-- 포인트컷(표현식 적용)
-	<bean id="transactionPointcut" class="org.springframework.aop.aspectj.AspectJExpressionPointcut">
-		<property name="expression" value="execution(* *..*ServiceImpl.upgrade*(..))" />
-	</bean>
-	-->
-	 
-	<!-- 어드바이스 + 포인트컷 = 어드바이저
-	<bean id="transactionAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
-		<property name="advice" ref="transactionAdvice" />
-		<property name="pointcut" ref="transactionPointcut" />
-	</bean>
-	-->
-	 
-	<!-- 어드바이저를 이용하는 자동 프록시 생성기
-	<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" />
-	-->
-	 
 	<!-- aop 네임스페이스를 적용한 AOP 설정 빈 -->
 	<aop:config>	<!-- AOP설정을 담는 부모 태그다. 필요에 따라 AspectJAdvisorAutoProxyCreator를 빈으로 등록해준다. -->
 		<!-- <aop:pointcut expression="execution(* *..*ServiceImpl.*(..))" id="transactionPointcut"/> -->
@@ -91,7 +84,5 @@
 		<!-- advice와 pointcut의 ref를 프로퍼티로 갖는 DefaultBeanFactoryPointcutAdvisor를 등록해준다. -->
 	</aop:config>
 	
-	<jdbc:embedded-database id="embeddedDatabase" type="HSQL">
-		<jdbc:script location="classpath:springbook/user/sqlservice/updatable/sqlRegistrySchema.sql"/>
-	</jdbc:embedded-database>
+	
 </beans>
