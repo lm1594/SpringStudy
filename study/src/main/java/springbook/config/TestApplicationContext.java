@@ -1,29 +1,30 @@
 package springbook.config;
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.mail.MailSender;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.mysql.cj.jdbc.Driver;
 
 import springbook.user.dao.UserDao;
 import springbook.user.dao.UserDaoJdbc;
 import springbook.user.service.DummyMailSender;
+import springbook.user.service.TestUserService;
 import springbook.user.service.UserService;
 import springbook.user.service.UserServiceImpl;
-import springbook.user.service.UserServiceTest.TestUserService;
 import springbook.user.sqlservice.OxmSqlService;
 import springbook.user.sqlservice.SqlRegistry;
 import springbook.user.sqlservice.SqlService;
@@ -38,9 +39,14 @@ import springbook.user.sqlservice.updatable.EmbeddedDbSqlRegistry;
  *    - 7.6.1 자바 코드를 이용한 빈 설정
  */
 @Configuration
+@EnableTransactionManagement
+@ImportResource("/test-applicationContext.xml")
+@ComponentScan(basePackages = "springbook.user")
 public class TestApplicationContext {
 	
 	// @Autowired : 필드의 타입을 기준으로, @Resource : 필드의 이름을 기준으로
+	@Autowired UserDao userDao;
+	
 	
 	//----------------------------------------------------- 
 	// DB 연결과 트랜잭션
@@ -68,30 +74,10 @@ public class TestApplicationContext {
 	//----------------------------------------------------- 
 	// 애플리케이션 로직 & 테스트
 	//-----------------------------------------------------
-	@Autowired SqlService sqlService;
-	
-	@Bean
-	public UserDao userDao() {
-		UserDaoJdbc dao = new UserDaoJdbc();
-		dao.setDataSource(dataSource());
-		dao.setSqlService(this.sqlService);
-		
-		return dao;
-	}
-	
-	@Bean
-	public UserService userService() {
-		UserServiceImpl service = new UserServiceImpl();
-		service.setUserDao(userDao());
-		service.setMailSender(mailSender());
-		
-		return service;
-	}
-	
 	@Bean
 	public UserService testUserService () {
 		TestUserService testService = new TestUserService();
-		testService.setUserDao(userDao());
+		testService.setUserDao(this.userDao);
 		testService.setMailSender(mailSender());
 		
 		return testService;

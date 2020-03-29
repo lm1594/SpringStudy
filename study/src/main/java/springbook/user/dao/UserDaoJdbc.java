@@ -3,13 +3,14 @@ package springbook.user.dao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
@@ -72,7 +73,10 @@ import springbook.user.sqlservice.SqlService;
  *    - 7.1.1 XML 설정을 이용한 분리 
  *    - 7.1.2 SQL 제공 서비스
  */
+@Repository("userDao")
 public class UserDaoJdbc implements UserDao{
+	
+	@Autowired
 	private SqlService sqlService;
 	public void setSqlService(SqlService sqlService) {
 		this.sqlService = sqlService;
@@ -96,6 +100,7 @@ public class UserDaoJdbc implements UserDao{
 	
 	private JdbcTemplate jdbcTemplate;
 	
+	@Autowired
 	public void setDataSource(DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}

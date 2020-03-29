@@ -2,8 +2,10 @@ package springbook.user.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.stereotype.Service;
 
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
@@ -37,17 +39,20 @@ import springbook.user.domain.User;
  *   6.2장 고립된 단위 테스트
  *    - 6.2.2 테스트 대상 오브젝트 고립시키기
  */
+@Service("userService")
 public class UserServiceImpl implements UserService{
 	
 	public static final int MIN_LOGCOUNT_FOR_SILVER = 50;
 	public static final int MIN_RECCOMEND_FOR_GOLD = 30;
 	
+	@Autowired
 	private UserDao userDao;
 	public void setUserDao (UserDao userDao) {
 		this.userDao = userDao;
 	}
 	
 	//리스트 5-53 메일 전송 기능을 가진 오브젝트를 DI 받도록 수정한 UserService
+	@Autowired
 	private MailSender mailSender;
 	public void setMailSender(MailSender mailSender) {
 		this.mailSender = mailSender;
