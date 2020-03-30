@@ -7,11 +7,13 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.mail.MailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
@@ -38,6 +40,7 @@ import springbook.user.sqlservice.updatable.EmbeddedDbSqlRegistry;
  * 	7장 스프링 핵심 기술의 응용
  *   7.6장 스프링3.1의 DI
  *    - 7.6.1 자바 코드를 이용한 빈 설정
+ *    - 7.6.4 프로파일
  */
 @Configuration
 @EnableTransactionManagement
@@ -71,5 +74,47 @@ public class AppContext {
 		transactionManager.setDataSource(dataSource());
 		
 		return transactionManager;
+	}
+	
+	/**
+	 * 토비의 스프링
+	 * @author 이경민
+	 * @history
+	 * 	7장 스프링 핵심 기술의 응용
+	 *   7.6장 스프링3.1의 DI
+	 *    - 7.6.4 프로파일
+	 */
+	@Configuration
+	@Profile("production")
+	public static class ProductionAppContext {
+		@Bean
+		public MailSender mailSender() {
+			JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+			mailSender.setHost("localhost");
+			return mailSender;
+		}
+	}
+	
+	/**
+	 * 토비의 스프링
+	 * @author 이경민
+	 * @history
+	 * 	7장 스프링 핵심 기술의 응용
+	 *   7.6장 스프링3.1의 DI
+	 *    - 7.6.3 컨텍스트 분리와 @Import
+	 *    - 7.6.4 프로파일
+	 */
+	@Configuration
+	@Profile("test")
+	public static class TestAppContext {
+		@Bean
+		public UserService testUserService () {
+			return new TestUserService();
+		}
+		
+		@Bean
+		public MailSender mailSender() {
+			return new DummyMailSender();
+		}
 	}
 }

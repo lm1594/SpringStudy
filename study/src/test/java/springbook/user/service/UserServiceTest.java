@@ -23,13 +23,13 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
 import springbook.config.AppContext;
-import springbook.config.TestAppContext;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
@@ -73,7 +73,8 @@ import springbook.user.exception.TestUserServiceException;
  *    - 7.6.1 자바 코드를 이용한 빈 설정
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes={AppContext.class, TestAppContext.class})
+@ActiveProfiles("test")
+@ContextConfiguration(classes=AppContext.class)
 public class UserServiceTest {
 
 	@Autowired private UserService userService;
