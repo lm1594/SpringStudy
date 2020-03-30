@@ -1,4 +1,4 @@
-package springbook.config;
+package springbook.user.config;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
