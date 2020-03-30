@@ -20,7 +20,8 @@ import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import springbook.config.TestApplicationContext;
+import springbook.config.AppContext;
+import springbook.config.TestAppContext;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
@@ -64,7 +65,7 @@ import springbook.user.domain.User;
  *    - 7.6.1 자바 코드를 이용한 빈 설정
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes={TestApplicationContext.class})
+@ContextConfiguration(classes={AppContext.class, TestAppContext.class})
 public class UserDaoTest {
 	
 	@Autowired
