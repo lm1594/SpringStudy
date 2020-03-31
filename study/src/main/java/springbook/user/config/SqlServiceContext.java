@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
@@ -40,6 +41,9 @@ import springbook.user.sqlservice.updatable.EmbeddedDbSqlRegistry;
  */
 @Configuration
 public class SqlServiceContext {
+	
+	@Autowired SqlMapConfig sqlMapConfig;
+	
 	//----------------------------------------------------- 
 	// SQL 서비스
 	//-----------------------------------------------------
@@ -48,6 +52,7 @@ public class SqlServiceContext {
 		OxmSqlService sqlService = new OxmSqlService();
 		sqlService.setUnmarshaller(unmarshaller());
 		sqlService.setSqlRegistry(sqlRegistry());
+		sqlService.setSqlmap(this.sqlMapConfig.getSqlMapResource());
 		
 		return sqlService;
 	}

@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.mail.MailSender;
@@ -35,13 +37,14 @@ import springbook.user.service.UserService;
  *    - 7.6.1 자바 코드를 이용한 빈 설정
  *    - 7.6.4 프로파일
  *    - 7.6.5 프로퍼티 소스
+ *    - 7.6.6 빈 설정의 재사용과 @Enable*
  */
 @Configuration
 @EnableTransactionManagement
-@ImportResource("/test-applicationContext.xml")
+//@ImportResource("/test-applicationContext.xml")
 @ComponentScan(basePackages = "springbook.user")
-@Import(SqlServiceContext.class)
-public class AppContext {
+@EnableSqlService	//@Import(SqlServiceContext.class)
+public class AppContext implements SqlMapConfig{
 
 	// @Autowired : 필드의 타입을 기준으로, @Resource : 필드의 이름을 기준으로
 	
@@ -120,5 +123,10 @@ public class AppContext {
 		public MailSender mailSender() {
 			return new DummyMailSender();
 		}
+	}
+
+	@Override
+	public Resource getSqlMapResource() {
+		return new ClassPathResource("sqlmap.xml", UserDao.class);
 	}
 }

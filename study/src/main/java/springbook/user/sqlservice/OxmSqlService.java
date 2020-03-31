@@ -60,7 +60,7 @@ public class OxmSqlService implements SqlService{
 	private class OxmSqlReader implements SqlReader {
 		private Unmarshaller unmarshaller;
 		private static final String DEFAULT_SQLMAP_FILE = "sqlmap.xml";			// 굳이 상수로 만들지 않고 바로 sqlmapFile의 값으로 넣어도 상관없지만 이렇게 해주면 의도가 코드에 분명히 드러나고 코드도 폼이 난다.
-		private Resource sqlmap = new ClassPathResource(DEFAULT_SQLMAP_FILE, UserDao.class);
+		private Resource sqlmap = new ClassPathResource(DEFAULT_SQLMAP_FILE);
 		
 		public void setSqlmap(Resource sqlmap) {
 			this.sqlmap = sqlmap;												// sqlMapFile은 SqlReader의 특정 구현 방법에 종속되는 프로퍼티가 된다.
